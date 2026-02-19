@@ -1,0 +1,64 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { getCategoryDef } from '../data/taxonomy';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  article: CollectionEntry<'knowledge'>;
+}
+
+const { article } = Astro.props;
+const { title, description, date, category, tags, updated } = article.data;
+const categoryDef = getCategoryDef(category);
+const formattedDate = date.toISOString().split('T')[0];
+const formattedUpdated = updated?.toISOString().split('T')[0];
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    @import '../styles/article.css';
+  </style>
+
+  <div class="progress-bar" id="progress"></div>
+
+  <div class="container">
+    <a href="/knowledge-base/" class="back-link">← Knowledge Base</a>
+
+    <header class="article-header">
+      <div class="category-badge" style={`color: ${categoryDef.color}`}>
+        {categoryDef.labelJa}
+      </div>
+      <h1>{title}</h1>
+      <p style="color: var(--text-dim); margin-bottom: 16px;">{description}</p>
+      <div class="article-meta">
+        <span class="mono">{formattedDate}</span>
+        {formattedUpdated && <span class="mono">Updated: {formattedUpdated}</span>}
+        <span>{category}</span>
+      </div>
+      <div class="article-tags">
+        {tags.map((tag) => (
+          <a href={`/knowledge-base/tags/${tag}/`} class="tag">{tag}</a>
+        ))}
+      </div>
+    </header>
+
+    <article class="article-body">
+      <slot />
+    </article>
+
+    <footer style="padding: 60px 0; text-align: center; color: var(--text-muted); font-size: 12px;">
+      <a href="/knowledge-base/" class="back-link">← Back to Knowledge Base</a>
+    </footer>
+  </div>
+
+  <script>
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const bar = document.getElementById('progress');
+      if (!bar) return;
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = docHeight > 0 ? `${(scrollTop / docHeight) * 100}%` : '0%';
+    });
+  </script>
+</BaseLayout>
