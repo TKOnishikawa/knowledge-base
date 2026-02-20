@@ -36,6 +36,12 @@ export const taxonomy: Record<string, CategoryDef> = {
     color: '#f472b6',
     subcategories: ['転職', '独立', 'スキル', 'ネットワーク'],
   },
+  sns: {
+    label: 'SNS',
+    labelJa: 'SNS・マーケティング',
+    color: '#fb923c',
+    subcategories: ['X', 'Instagram', 'LINE', 'YouTube', '広告運用', 'コンテンツ'],
+  },
   notes: {
     label: 'Notes',
     labelJa: '雑記',

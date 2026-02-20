@@ -1,10 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Search from '../components/Search.astro';
 import { getPublishedArticles } from '../utils/collections';
 import { taxonomy, getCategoryDef } from '../data/taxonomy';
 
 const articles = await getPublishedArticles();
 const categories = Object.entries(taxonomy);
+
+const maturityConfig: Record<string, { label: string; color: string }> = {
+  seed: { label: 'SEED', color: '#f59e0b' },
+  memo: { label: 'MEMO', color: '#22d3ee' },
+  draft: { label: 'DRAFT', color: '#a78bfa' },
+};
 ---
 
 <BaseLayout title="Knowledge Base" description="AI-powered personal knowledge portal">
@@ -135,6 +142,45 @@ const categories = Object.entries(taxonomy);
       font-weight: 600;
       color: var(--text);
     }
+
+    /* Maturity filter */
+    .maturity-bar {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .maturity-btn {
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+    }
+    .maturity-btn:hover, .maturity-btn.active {
+      border-color: var(--btn-color, var(--cyan));
+      color: var(--btn-color, var(--cyan));
+      background: rgba(34, 211, 238, 0.06);
+    }
+
+    /* Maturity badge on cards */
+    .maturity-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
   </style>
 
   <div class="container">
@@ -147,6 +193,16 @@ const categories = Object.entries(taxonomy);
     <div class="stats">
       <div><span class="num">{articles.length}</span> articles</div>
       <div><span class="num">{new Set(articles.map(a => a.data.category)).size}</span> categories</div>
+    </div>
+
+    <Search />
+
+    <div class="maturity-bar">
+      <button class="maturity-btn active" data-maturity="all" style="--btn-color: var(--cyan)">All</button>
+      <button class="maturity-btn" data-maturity="seed" style="--btn-color: #f59e0b">Seed</button>
+      <button class="maturity-btn" data-maturity="memo" style="--btn-color: #22d3ee">Memo</button>
+      <button class="maturity-btn" data-maturity="draft" style="--btn-color: #a78bfa">Draft</button>
+      <button class="maturity-btn" data-maturity="published" style="--btn-color: #34d399">Article</button>
     </div>
 
     <div class="filter-bar">
@@ -165,9 +221,18 @@ const categories = Object.entries(taxonomy);
       {articles.map((article) => {
         const catDef = getCategoryDef(article.data.category);
         const dateStr = article.data.date.toISOString().split('T')[0];
+        const maturity = article.data.maturity ?? 'published';
+        const mConf = maturityConfig[maturity];
         return (
-          <a href={`/knowledge-base/knowledge/${article.id.replace(/\.md$/, '')}/`} class="article-card" data-category={article.data.category}>
-            <div class="card-eyebrow" style={`color: ${catDef.color}`}>{catDef.labelJa}</div>
+          <a href={`/knowledge-base/knowledge/${article.id.replace(/\.md$/, '')}/`} class="article-card" data-category={article.data.category} data-maturity={maturity}>
+            <div class="card-eyebrow" style={`color: ${catDef.color}`}>
+              {catDef.labelJa}
+              {mConf && (
+                <span class="maturity-badge" style={`color: ${mConf.color}; background: ${mConf.color}15; border: 1px solid ${mConf.color}40;`}>
+                  {mConf.label}
+                </span>
+              )}
+            </div>
             <div class="card-title">{article.data.title}</div>
             <div class="card-desc">{article.data.description}</div>
             <div class="card-meta">
@@ -188,19 +253,35 @@ const categories = Object.entries(taxonomy);
   </div>
 
   <script>
+    let activeCategory = 'all';
+    let activeMaturity = 'all';
+
+    function applyFilters() {
+      document.querySelectorAll('.article-card').forEach(card => {
+        const el = card as HTMLElement;
+        const cat = el.getAttribute('data-category');
+        const mat = el.getAttribute('data-maturity');
+        const matchCat = activeCategory === 'all' || cat === activeCategory;
+        const matchMat = activeMaturity === 'all' || mat === activeMaturity;
+        el.style.display = (matchCat && matchMat) ? '' : 'none';
+      });
+    }
+
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const cat = btn.getAttribute('data-category');
-        document.querySelectorAll('.article-card').forEach(card => {
-          const el = card as HTMLElement;
-          if (cat === 'all' || el.getAttribute('data-category') === cat) {
-            el.style.display = '';
-          } else {
-            el.style.display = 'none';
-          }
-        });
+        activeCategory = btn.getAttribute('data-category') ?? 'all';
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll('.maturity-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.maturity-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeMaturity = btn.getAttribute('data-maturity') ?? 'all';
+        applyFilters();
       });
     });
   </script>

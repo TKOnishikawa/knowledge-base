@@ -21,6 +21,12 @@ const knowledge = defineCollection({
     seriesOrder: z.number().optional(),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
 
+    // === Maturity & Actionability ===
+    maturity: z.enum(['seed', 'memo', 'draft', 'published']).default('published'),
+    actionability: z.enum(['reference', 'actionable', 'explore']).optional(),
+    tools_mentioned: z.array(z.string()).optional(),
+    session_context: z.string().optional(),
+
     // === Lifecycle ===
     updated: z.date().optional(),
     draft: z.boolean().default(false),

@@ -46,6 +46,7 @@ status: published      # draft / published / archived / outdated
 | data | データ分析 | cyan |
 | ai | AI・自動化 | purple |
 | career | キャリア | pink |
+| sns | SNS・マーケティング | orange |
 | notes | 雑記 | gray |
 
 ## AIマニフェスト

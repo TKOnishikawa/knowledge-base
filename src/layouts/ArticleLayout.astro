@@ -8,15 +8,33 @@ interface Props {
 }
 
 const { article } = Astro.props;
-const { title, description, date, category, tags, updated } = article.data;
+const { title, description, date, category, tags, updated, maturity, tools_mentioned } = article.data;
 const categoryDef = getCategoryDef(category);
 const formattedDate = date.toISOString().split('T')[0];
 const formattedUpdated = updated?.toISOString().split('T')[0];
+
+const maturityConfig: Record<string, { label: string; color: string }> = {
+  seed: { label: 'SEED', color: '#f59e0b' },
+  memo: { label: 'MEMO', color: '#22d3ee' },
+  draft: { label: 'DRAFT', color: '#a78bfa' },
+};
+const mConf = maturityConfig[maturity ?? ''];
 ---
 
 <BaseLayout title={title} description={description}>
   <style>
     @import '../styles/article.css';
+
+    .maturity-label {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
   </style>
 
   <div class="progress-bar" id="progress"></div>
@@ -27,6 +45,11 @@ const formattedUpdated = updated?.toISOString().split('T')[0];
     <header class="article-header">
       <div class="category-badge" style={`color: ${categoryDef.color}`}>
         {categoryDef.labelJa}
+        {mConf && (
+          <span class="maturity-label" style={`color: ${mConf.color}; background: ${mConf.color}15; border: 1px solid ${mConf.color}40;`}>
+            {mConf.label}
+          </span>
+        )}
       </div>
       <h1>{title}</h1>
       <p style="color: var(--text-dim); margin-bottom: 16px;">{description}</p>
@@ -42,7 +65,14 @@ const formattedUpdated = updated?.toISOString().split('T')[0];
       </div>
     </header>
 
-    <article class="article-body">
+    <article class="article-body" data-pagefind-body>
+      <div data-pagefind-meta={`title:${title}`} data-pagefind-filter={`category:${category}`} data-pagefind-filter={`maturity:${maturity ?? 'published'}`}></div>
+      {tags.map((tag) => (
+        <span data-pagefind-meta={`tag:${tag}`} style="display:none;"></span>
+      ))}
+      {tools_mentioned?.map((tool) => (
+        <span data-pagefind-meta={`tool:${tool}`} style="display:none;"></span>
+      ))}
       <slot />
     </article>
 
