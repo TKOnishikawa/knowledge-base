@@ -1,0 +1,134 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getContentTypeDef, statusConfig, templateTypes } from '../data/sns-taxonomy';
+
+interface Props {
+  item: CollectionEntry<'sns-content'>;
+}
+
+const { item } = Astro.props;
+const { title, description, contentType, date, status, topic, tags, templateType, metrics, timeSpentMinutes } = item.data;
+const typeDef = getContentTypeDef(contentType);
+const sConf = statusConfig[status];
+const dateStr = date.toISOString().split('T')[0];
+const slug = item.id.replace(/\.md$/, '');
+const tplConf = templateType ? templateTypes[templateType] : null;
+---
+
+<a href={`/knowledge-base/sns/${slug}/`} class="sns-card" data-content-type={contentType} data-status={status} data-topic={topic}>
+  <div class="card-top">
+    <span class="type-icon" style={`color: ${typeDef.color}`}>{typeDef.icon}</span>
+    <span class="type-label" style={`color: ${typeDef.color}`}>{typeDef.label}</span>
+    {sConf && (
+      <span class="status-badge" style={`color: ${sConf.color}; background: ${sConf.color}15; border: 1px solid ${sConf.color}40;`}>
+        {sConf.label}
+      </span>
+    )}
+    {tplConf && (
+      <span class="template-badge" style={`color: ${tplConf.color}; background: ${tplConf.color}15; border: 1px solid ${tplConf.color}40;`}>
+        {templateType}
+      </span>
+    )}
+  </div>
+  <div class="card-title">{title}</div>
+  <div class="card-desc">{description}</div>
+  <div class="card-meta">
+    <span class="mono">{dateStr}</span>
+    <span class="topic-chip">{topic}</span>
+    {timeSpentMinutes && <span>{timeSpentMinutes}min</span>}
+    {metrics && metrics.impressions && (
+      <span>{metrics.impressions.toLocaleString()} imp</span>
+    )}
+  </div>
+  {tags.length > 0 && (
+    <div class="card-tags">
+      {tags.map((tag) => (
+        <span class="card-tag">{tag}</span>
+      ))}
+    </div>
+  )}
+</a>
+
+<style>
+  .sns-card {
+    display: block;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .sns-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .type-icon {
+    font-size: 16px;
+  }
+  .type-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .status-badge, .template-badge {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .card-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .topic-chip {
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 10px;
+  }
+  .card-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .card-tag {
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+  }
+</style>

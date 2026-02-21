@@ -38,9 +38,39 @@ const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
   <!-- Styles -->
   <style is:global>
     @import '../styles/global.css';
+
+    .site-nav {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px 16px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-nav-link {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 4px 14px;
+      border-radius: 14px;
+      transition: all 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .site-nav-link:hover {
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.06);
+    }
   </style>
 </head>
 <body>
+  <nav class="site-nav">
+    <a href="/knowledge-base/" class="site-nav-link">Knowledge</a>
+    <a href="/knowledge-base/sns/" class="site-nav-link">SNS Portal</a>
+  </nav>
   <slot />
 </body>
 </html>

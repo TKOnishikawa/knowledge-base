@@ -1,0 +1,274 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { getContentTypeDef, statusConfig, templateTypes } from '../data/sns-taxonomy';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  item: CollectionEntry<'sns-content'>;
+}
+
+const { item } = Astro.props;
+const { title, description, contentType, date, status, topic, tags, templateType,
+        metrics, timeSpentMinutes, learnings, tweetUrl, youtubeUrl, articleUrl,
+        productionPipeline, publishDate, tools_mentioned } = item.data;
+
+const typeDef = getContentTypeDef(contentType);
+const sConf = statusConfig[status];
+const tplConf = templateType ? templateTypes[templateType] : null;
+const formattedDate = date.toISOString().split('T')[0];
+const formattedPublish = publishDate?.toISOString().split('T')[0];
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    @import '../styles/article.css';
+
+    .sns-header-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .sns-type-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sns-status-badge, .sns-template-badge {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .sns-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+      padding: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .meta-item {
+      font-size: 12px;
+    }
+    .meta-item .label {
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .meta-item .value {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text);
+    }
+    .meta-item .value a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .meta-item .value a:hover {
+      text-decoration: underline;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .metric-card {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-raised);
+      border-radius: 8px;
+    }
+    .metric-card .num {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--cyan);
+    }
+    .metric-card .label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    .learnings-box {
+      margin: 24px 0;
+      padding: 16px;
+      border-left: 3px solid var(--amber);
+      background: var(--bg-surface);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .learnings-box .box-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .pipeline-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .pipeline-tag {
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(34, 211, 238, 0.08);
+      color: var(--cyan);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+    }
+  </style>
+
+  <div class="progress-bar" id="progress"></div>
+
+  <div class="container">
+    <a href="/knowledge-base/sns/" class="back-link">&larr; SNS Portal</a>
+
+    <header class="article-header">
+      <div class="sns-header-badges">
+        <span class="sns-type-badge" style={`color: ${typeDef.color}`}>
+          {typeDef.icon} {typeDef.label}
+        </span>
+        {sConf && (
+          <span class="sns-status-badge" style={`color: ${sConf.color}; background: ${sConf.color}15; border: 1px solid ${sConf.color}40;`}>
+            {sConf.label}
+          </span>
+        )}
+        {tplConf && (
+          <span class="sns-template-badge" style={`color: ${tplConf.color}; background: ${tplConf.color}15; border: 1px solid ${tplConf.color}40;`}>
+            {templateType}
+          </span>
+        )}
+      </div>
+      <h1>{title}</h1>
+      <p style="color: var(--text-dim); margin-bottom: 16px;">{description}</p>
+      <div class="article-meta">
+        <span class="mono">{formattedDate}</span>
+        {formattedPublish && <span class="mono">Published: {formattedPublish}</span>}
+        <span>{topic}</span>
+      </div>
+      <div class="article-tags">
+        {tags.map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+    </header>
+
+    <!-- Meta grid -->
+    <div class="sns-meta-grid">
+      {tweetUrl && (
+        <div class="meta-item">
+          <div class="label">Post URL</div>
+          <div class="value"><a href={tweetUrl} target="_blank" rel="noopener">View on X</a></div>
+        </div>
+      )}
+      {youtubeUrl && (
+        <div class="meta-item">
+          <div class="label">YouTube</div>
+          <div class="value"><a href={youtubeUrl} target="_blank" rel="noopener">Watch</a></div>
+        </div>
+      )}
+      {articleUrl && (
+        <div class="meta-item">
+          <div class="label">Article</div>
+          <div class="value"><a href={articleUrl} target="_blank" rel="noopener">Read</a></div>
+        </div>
+      )}
+      {timeSpentMinutes && (
+        <div class="meta-item">
+          <div class="label">Time Spent</div>
+          <div class="value">{timeSpentMinutes} min</div>
+        </div>
+      )}
+      {productionPipeline && productionPipeline.length > 0 && (
+        <div class="meta-item" style="grid-column: 1 / -1;">
+          <div class="label">Pipeline</div>
+          <div class="pipeline-tags">
+            {productionPipeline.map((tool) => (
+              <span class="pipeline-tag">{tool}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- Metrics -->
+    {metrics && (metrics.impressions || metrics.engagements) && (
+      <div class="metrics-grid">
+        {metrics.impressions !== undefined && (
+          <div class="metric-card">
+            <div class="num">{metrics.impressions.toLocaleString()}</div>
+            <div class="label">Impressions</div>
+          </div>
+        )}
+        {metrics.engagements !== undefined && (
+          <div class="metric-card">
+            <div class="num">{metrics.engagements.toLocaleString()}</div>
+            <div class="label">Engagements</div>
+          </div>
+        )}
+      </div>
+    )}
+    {metrics?.notes && (
+      <div class="learnings-box">
+        <div class="box-title">Metrics Notes</div>
+        {metrics.notes}
+      </div>
+    )}
+
+    <!-- Learnings -->
+    {learnings && (
+      <div class="learnings-box">
+        <div class="box-title">Learnings</div>
+        {learnings}
+      </div>
+    )}
+
+    <!-- Main content -->
+    <article class="article-body" data-pagefind-body>
+      <div data-pagefind-meta={`title:${title}`}
+           data-pagefind-filter={`contentType:${contentType}`}
+           data-pagefind-filter={`status:${status}`}
+           data-pagefind-filter={`topic:${topic}`}></div>
+      {tags.map((tag) => (
+        <span data-pagefind-meta={`tag:${tag}`} style="display:none;"></span>
+      ))}
+      {tools_mentioned?.map((tool) => (
+        <span data-pagefind-meta={`tool:${tool}`} style="display:none;"></span>
+      ))}
+      <slot />
+    </article>
+
+    <footer style="padding: 60px 0; text-align: center; color: var(--text-muted); font-size: 12px;">
+      <a href="/knowledge-base/sns/" class="back-link">&larr; Back to SNS Portal</a>
+    </footer>
+  </div>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const bar = document.getElementById('progress');
+      if (!bar) return;
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = docHeight > 0 ? `${(scrollTop / docHeight) * 100}%` : '0%';
+    });
+  </script>
+</BaseLayout>

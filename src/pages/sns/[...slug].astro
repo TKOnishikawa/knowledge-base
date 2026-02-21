@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import SNSContentLayout from '../../layouts/SNSContentLayout.astro';
+
+export async function getStaticPaths() {
+  const items = await getCollection('sns-content');
+  return items.map((item) => ({
+    params: { slug: item.id.replace(/\.md$/, '') },
+    props: { item },
+  }));
+}
+
+const { item } = Astro.props;
+const { Content } = await item.render();
+---
+
+<SNSContentLayout item={item}>
+  <Content />
+</SNSContentLayout>

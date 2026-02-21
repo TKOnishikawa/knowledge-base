@@ -1,9 +1,11 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { taxonomy } from '../data/taxonomy';
+import { contentTypes as snsContentTypes } from '../data/sns-taxonomy';
 
 export const GET: APIRoute = async () => {
   const articles = await getCollection('knowledge', ({ data }) => !data.draft);
+  const snsItems = await getCollection('sns-content');
 
   const byCategory: Record<string, number> = {};
   const byStatus: Record<string, number> = {};
@@ -50,13 +52,44 @@ export const GET: APIRoute = async () => {
       relatedSlugs: a.data.relatedSlugs ?? [],
       filePath: `src/content/knowledge/${a.id}.md`,
     })),
+    snsContent: (() => {
+      const snsByType: Record<string, number> = {};
+      const snsByStatus: Record<string, number> = {};
+      for (const s of snsItems) {
+        snsByType[s.data.contentType] = (snsByType[s.data.contentType] ?? 0) + 1;
+        snsByStatus[s.data.status] = (snsByStatus[s.data.status] ?? 0) + 1;
+      }
+      const snsSorted = [...snsItems].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+      return {
+        stats: {
+          total: snsItems.length,
+          byType: snsByType,
+          byStatus: snsByStatus,
+        },
+        items: snsSorted.map((s) => ({
+          slug: s.id.replace(/\.md$/, ''),
+          title: s.data.title,
+          contentType: s.data.contentType,
+          status: s.data.status,
+          topic: s.data.topic,
+          date: s.data.date.toISOString().split('T')[0],
+          tags: s.data.tags,
+          templateType: s.data.templateType ?? null,
+          metrics: s.data.metrics ?? null,
+          filePath: `src/content/sns-content/${s.id}`,
+        })),
+      };
+    })(),
     taxonomy,
+    snsContentTypes,
     howToUse: {
       findByCategory: 'articles配列をcategoryでフィルタ',
       findByKeyword: 'keywordsとtagsを合わせて検索',
       readArticle: 'filePathのMarkdownファイルをReadツールで読む',
       createArticle:
         'src/content/knowledge/ にMarkdownファイルを作成。必須: title, description, date, category, tags',
+      createSNSContent:
+        'src/content/sns-content/{type}/ にMarkdownファイルを作成。必須: title, description, contentType, date, status, topic',
     },
   };
 

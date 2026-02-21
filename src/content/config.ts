@@ -38,4 +38,58 @@ const knowledge = defineCollection({
   }),
 });
 
-export const collections = { knowledge };
+// SNS Content collection — actual production artifacts (posts, scripts, metrics, logs)
+// Distinction: knowledge/ = strategy/analysis, sns-content/ = operational records
+const snsContent = defineCollection({
+  type: 'content',
+  schema: z.object({
+    // === Required (6 fields: minimum input) ===
+    title: z.string(),
+    description: z.string().max(200),
+    contentType: z.enum(['x-post', 'youtube', 'article', 'idea', 'log']),
+    date: z.date(),
+    status: z.enum(['idea', 'draft', 'ready', 'published', 'reviewed']).default('idea'),
+    topic: z.string(),
+
+    // === Classification ===
+    tags: z.array(z.string()).default([]),
+    keywords: z.array(z.string()).optional(),
+    publishDate: z.date().optional(),
+
+    // === Content lineage ===
+    sourceSlug: z.string().optional(),
+    derivedSlugs: z.array(z.string()).optional(),
+
+    // === X-post specific ===
+    templateType: z.enum(['practice', 'insight', 'candid']).optional(),
+    tweetUrl: z.string().url().optional(),
+
+    // === YouTube specific ===
+    youtubeUrl: z.string().url().optional(),
+    durationMinutes: z.number().optional(),
+    productionPipeline: z.array(z.string()).optional(),
+
+    // === Article specific ===
+    articleUrl: z.string().url().optional(),
+    seoKeywords: z.array(z.string()).optional(),
+
+    // === Metrics (manual entry) ===
+    metrics: z.object({
+      impressions: z.number().optional(),
+      engagements: z.number().optional(),
+      notes: z.string().optional(),
+    }).optional(),
+
+    // === Production tracking ===
+    timeSpentMinutes: z.number().optional(),
+    learnings: z.string().optional(),
+
+    // === AI metadata ===
+    summary: z.string().optional(),
+    tools_mentioned: z.array(z.string()).optional(),
+    session_context: z.string().optional(),
+    source: z.string().optional(),
+  }),
+});
+
+export const collections = { knowledge, 'sns-content': snsContent };

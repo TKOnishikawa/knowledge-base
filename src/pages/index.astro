@@ -195,6 +195,14 @@ const maturityConfig: Record<string, { label: string; color: string }> = {
       <div><span class="num">{new Set(articles.map(a => a.data.category)).size}</span> categories</div>
     </div>
 
+    <div style="text-align: center; margin-bottom: 28px;">
+      <a href="/knowledge-base/sns/" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 20px; color: var(--cyan); text-decoration: none; font-size: 12px; font-weight: 600; transition: all 0.15s;"
+         onmouseover="this.style.background='rgba(34,211,238,0.06)'; this.style.borderColor='var(--cyan)'"
+         onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(34,211,238,0.2)'">
+        SNS Portal &rarr;
+      </a>
+    </div>
+
     <Search />
 
     <div class="maturity-bar">
