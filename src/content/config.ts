@@ -84,6 +84,13 @@ const snsContent = defineCollection({
     timeSpentMinutes: z.number().optional(),
     learnings: z.string().optional(),
 
+    // === Assets (linked files, Before/After, etc.) ===
+    assets: z.array(z.object({
+      label: z.string(),
+      url: z.string().url(),
+      type: z.enum(['html', 'image', 'video', 'document']).default('document'),
+    })).optional(),
+
     // === AI metadata ===
     summary: z.string().optional(),
     tools_mentioned: z.array(z.string()).optional(),

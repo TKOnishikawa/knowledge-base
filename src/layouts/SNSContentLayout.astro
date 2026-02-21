@@ -10,7 +10,7 @@ interface Props {
 const { item } = Astro.props;
 const { title, description, contentType, date, status, topic, tags, templateType,
         metrics, timeSpentMinutes, learnings, tweetUrl, youtubeUrl, articleUrl,
-        productionPipeline, publishDate, tools_mentioned } = item.data;
+        productionPipeline, publishDate, tools_mentioned, assets } = item.data;
 
 const typeDef = getContentTypeDef(contentType);
 const sConf = statusConfig[status];
@@ -135,6 +135,75 @@ const formattedPublish = publishDate?.toISOString().split('T')[0];
       color: var(--cyan);
       border: 1px solid rgba(34, 211, 238, 0.2);
     }
+
+    /* Assets section */
+    .assets-section {
+      margin: 24px 0;
+    }
+    .assets-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .assets-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .asset-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .asset-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .asset-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .asset-open-link {
+      font-size: 11px;
+      color: var(--cyan);
+      text-decoration: none;
+      padding: 3px 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      border-radius: 12px;
+      transition: all 0.15s;
+    }
+    .asset-open-link:hover {
+      background: rgba(34, 211, 238, 0.08);
+      border-color: var(--cyan);
+    }
+    .asset-iframe-wrap {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background: #fff;
+    }
+    .asset-iframe-wrap iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .assets-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 700px) {
+      .assets-compare {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 
   <div class="progress-bar" id="progress"></div>
@@ -239,6 +308,44 @@ const formattedPublish = publishDate?.toISOString().split('T')[0];
       <div class="learnings-box">
         <div class="box-title">Learnings</div>
         {learnings}
+      </div>
+    )}
+
+    <!-- Assets (Before/After, linked files) -->
+    {assets && assets.length > 0 && (
+      <div class="assets-section">
+        <div class="assets-title">Related Assets</div>
+        {assets.filter(a => a.type === 'html').length >= 2 ? (
+          <div class="assets-compare">
+            {assets.filter(a => a.type === 'html').map((asset) => (
+              <div class="asset-card">
+                <div class="asset-card-header">
+                  <span class="asset-label">{asset.label}</span>
+                  <a href={asset.url} target="_blank" rel="noopener" class="asset-open-link">Open</a>
+                </div>
+                <div class="asset-iframe-wrap">
+                  <iframe src={asset.url} loading="lazy" sandbox="allow-same-origin"></iframe>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="assets-grid">
+            {assets.map((asset) => (
+              <div class="asset-card">
+                <div class="asset-card-header">
+                  <span class="asset-label">{asset.label}</span>
+                  <a href={asset.url} target="_blank" rel="noopener" class="asset-open-link">Open</a>
+                </div>
+                {asset.type === 'html' && (
+                  <div class="asset-iframe-wrap">
+                    <iframe src={asset.url} loading="lazy" sandbox="allow-same-origin"></iframe>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     )}
 
