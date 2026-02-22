@@ -11,6 +11,7 @@ difficulty: intermediate
 audience: public
 source: "omoshiku.jp 実装セッション 2026-02-22"
 draft: false
+relatedSlugs: [omoshiku-hp-design-evolution, omoshiku-service-design]
 ---
 
 ## こんな悩み、ありませんか？
@@ -49,24 +50,9 @@ draft: false
 
 ### システム構成図
 
-```mermaid
-sequenceDiagram
-    participant User as 訪問者
-    participant Site as 静的サイト<br>(GitHub Pages)
-    participant GAS as Google Apps Script<br>(Web App)
-    participant Sheets as Google Sheets
-    participant Gmail as Gmail
+![GitHub Pages × GAS アーキテクチャ図](/images/knowledge/gas-contact-form-architecture.svg)
 
-    User->>Site: フォーム入力・送信
-    Site->>GAS: POST (JSON)
-    GAS->>Sheets: 行追加
-    GAS->>Gmail: 管理者通知メール
-    GAS->>Gmail: 自動返信メール
-    GAS-->>Site: 200 OK
-    Site->>User: サンクス画面表示
-```
-
-ポイントは、**静的サイトからGASのWeb AppにPOST送信**するだけというシンプルさ。GASがSheets書き込みとメール送信を一手に引き受けます。
+訪問者がフォームを送信すると、GAS Web Appが3つの処理を実行。**静的サイトからPOST送信するだけ**というシンプルさがポイントです。
 
 ---
 
@@ -449,16 +435,6 @@ GASをデプロイしただけでは、GmailApp や SpreadsheetApp へのアク�
 ---
 
 ## まとめ — 月額0円で手に入る3つのこと
-
-```mermaid
-graph LR
-    A[フォーム送信] --> B[Google Sheets<br>問い合わせ記録]
-    A --> C[Gmail<br>管理者通知]
-    A --> D[Gmail<br>自動返信]
-    style B fill:#e8f5e9
-    style C fill:#fff3e0
-    style D fill:#e3f2fd
-```
 
 | 機能 | 実現方法 | コスト |
 |------|---------|--------|

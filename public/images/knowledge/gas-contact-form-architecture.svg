@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="'Segoe UI', 'Noto Sans JP', sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.10"/>
+    </filter>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8944a"/>
+      <stop offset="100%" stop-color="#d4763a"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34a853"/>
+      <stop offset="100%" stop-color="#2d8f47"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4285f4"/>
+      <stop offset="100%" stop-color="#3367d6"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ea4335"/>
+      <stop offset="100%" stop-color="#c5221f"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" rx="16" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a2e" letter-spacing="0.5">GitHub Pages × Google Apps Script — 問い合わせフォーム アーキテクチャ</text>
+  <line x1="280" y1="50" x2="620" y2="50" stroke="#e8944a" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ====== Row 1: Visitor + Static Site ====== -->
+
+  <!-- Visitor -->
+  <g transform="translate(80, 100)">
+    <rect width="140" height="100" rx="12" fill="white" filter="url(#shadow)" stroke="#e0e0e0" stroke-width="1"/>
+    <circle cx="70" cy="36" r="18" fill="url(#accent)" opacity="0.15"/>
+    <text x="70" y="42" text-anchor="middle" font-size="22">👤</text>
+    <text x="70" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#333">訪問者</text>
+    <text x="70" y="88" text-anchor="middle" font-size="10" fill="#888">フォーム入力</text>
+  </g>
+
+  <!-- Arrow: Visitor → Site -->
+  <g>
+    <line x1="220" y1="150" x2="300" y2="150" stroke="#e8944a" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="300,145 312,150 300,155" fill="#e8944a"/>
+    <text x="260" y="140" text-anchor="middle" font-size="9" fill="#e8944a" font-weight="600">送信</text>
+  </g>
+
+  <!-- Static Site (GitHub Pages) -->
+  <g transform="translate(312, 90)">
+    <rect width="220" height="120" rx="12" fill="white" filter="url(#shadow)" stroke="#e0e0e0" stroke-width="1"/>
+    <rect width="220" height="32" rx="12" fill="url(#purple)" ry="0"/>
+    <rect x="0" y="12" width="220" height="20" fill="url(#purple)"/>
+    <text x="110" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="white">GitHub Pages</text>
+    <text x="110" y="68" text-anchor="middle" font-size="12" font-weight="600" fill="#333">静的サイト</text>
+    <text x="110" y="86" text-anchor="middle" font-size="10" fill="#666">HTML + CSS + JS</text>
+    <text x="110" y="102" text-anchor="middle" font-size="9" fill="#999">fetch(POST, no-cors)</text>
+
+    <!-- badges -->
+    <rect x="28" y="46" width="72" height="16" rx="8" fill="#f3e8ff" stroke="#7c3aed" stroke-width="0.5"/>
+    <text x="64" y="57" text-anchor="middle" font-size="8" fill="#7c3aed" font-weight="600">ハニーポット</text>
+    <rect x="108" y="46" width="86" height="16" rx="8" fill="#f3e8ff" stroke="#7c3aed" stroke-width="0.5"/>
+    <text x="151" y="57" text-anchor="middle" font-size="8" fill="#7c3aed" font-weight="600">バリデーション</text>
+  </g>
+
+  <!-- Arrow: Site → GAS -->
+  <g>
+    <line x1="532" y1="150" x2="610" y2="150" stroke="#e8944a" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="610,145 622,150 610,155" fill="#e8944a"/>
+    <rect x="544" y="128" width="70" height="16" rx="4" fill="#fff7ed" stroke="#e8944a" stroke-width="0.8"/>
+    <text x="579" y="139" text-anchor="middle" font-size="8" fill="#c2702a" font-weight="600">JSON (text/plain)</text>
+  </g>
+
+  <!-- GAS Web App (Center hub) -->
+  <g transform="translate(622, 80)">
+    <rect width="200" height="140" rx="14" fill="white" filter="url(#shadow)" stroke="#e8944a" stroke-width="2"/>
+    <rect width="200" height="34" rx="14" fill="url(#accent)" ry="0"/>
+    <rect x="0" y="14" width="200" height="20" fill="url(#accent)"/>
+    <text x="100" y="24" text-anchor="middle" font-size="12" font-weight="700" fill="white">Google Apps Script</text>
+    <text x="100" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a2e">doPost(e)</text>
+    <text x="100" y="82" text-anchor="middle" font-size="10" fill="#666">Web App（全員アクセス可）</text>
+
+    <!-- 3 functions -->
+    <g transform="translate(14, 94)">
+      <rect width="52" height="20" rx="4" fill="#e8f5e9"/>
+      <text x="26" y="14" text-anchor="middle" font-size="8" fill="#2d7a3a" font-weight="600">Sheets</text>
+    </g>
+    <g transform="translate(74, 94)">
+      <rect width="52" height="20" rx="4" fill="#fff3e0"/>
+      <text x="26" y="14" text-anchor="middle" font-size="8" fill="#c2702a" font-weight="600">通知Mail</text>
+    </g>
+    <g transform="translate(134, 94)">
+      <rect width="52" height="20" rx="4" fill="#e3f2fd"/>
+      <text x="26" y="14" text-anchor="middle" font-size="8" fill="#1565c0" font-weight="600">自動返信</text>
+    </g>
+
+    <!-- Free badge -->
+    <rect x="148" y="56" width="44" height="16" rx="8" fill="#e8944a" opacity="0.12"/>
+    <text x="170" y="67" text-anchor="middle" font-size="9" fill="#c2702a" font-weight="700">無料</text>
+  </g>
+
+  <!-- ====== Row 2: Three outputs ====== -->
+
+  <!-- Arrow: GAS → Sheets -->
+  <g>
+    <line x1="660" y1="220" x2="660" y2="280" stroke="#34a853" stroke-width="2" stroke-dasharray="6,3"/>
+    <polygon points="655,280 660,292 665,280" fill="#34a853"/>
+  </g>
+
+  <!-- Arrow: GAS → Admin Mail -->
+  <g>
+    <line x1="722" y1="220" x2="722" y2="280" stroke="#e8944a" stroke-width="2" stroke-dasharray="6,3"/>
+    <polygon points="717,280 722,292 727,280" fill="#e8944a"/>
+  </g>
+
+  <!-- Arrow: GAS → Auto Reply -->
+  <g>
+    <line x1="784" y1="220" x2="784" y2="280" stroke="#4285f4" stroke-width="2" stroke-dasharray="6,3"/>
+    <polygon points="779,280 784,292 789,280" fill="#4285f4"/>
+  </g>
+
+  <!-- Output 1: Google Sheets -->
+  <g transform="translate(582, 295)">
+    <rect width="156" height="108" rx="12" fill="white" filter="url(#shadow)" stroke="#34a853" stroke-width="1.5"/>
+    <rect width="156" height="28" rx="12" fill="url(#green)" ry="0"/>
+    <rect x="0" y="12" width="156" height="16" fill="url(#green)"/>
+    <text x="78" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="white">Google Sheets</text>
+
+    <!-- Mini spreadsheet -->
+    <g transform="translate(16, 38)">
+      <rect width="124" height="56" rx="4" fill="#f0faf0" stroke="#c8e6c9" stroke-width="1"/>
+      <line x1="0" y1="16" x2="124" y2="16" stroke="#c8e6c9"/>
+      <line x1="0" y1="32" x2="124" y2="32" stroke="#c8e6c9"/>
+      <line x1="0" y1="48" x2="124" y2="48" stroke="#c8e6c9"/>
+      <line x1="42" y1="0" x2="42" y2="56" stroke="#c8e6c9"/>
+      <line x1="84" y1="0" x2="84" y2="56" stroke="#c8e6c9"/>
+      <text x="21" y="11" text-anchor="middle" font-size="7" fill="#2d7a3a" font-weight="600">日時</text>
+      <text x="63" y="11" text-anchor="middle" font-size="7" fill="#2d7a3a" font-weight="600">名前</text>
+      <text x="104" y="11" text-anchor="middle" font-size="7" fill="#2d7a3a" font-weight="600">内容</text>
+      <text x="21" y="27" text-anchor="middle" font-size="6" fill="#666">2/22</text>
+      <text x="63" y="27" text-anchor="middle" font-size="6" fill="#666">山田様</text>
+      <text x="104" y="27" text-anchor="middle" font-size="6" fill="#666">DX相談</text>
+    </g>
+  </g>
+
+  <!-- Output 2: Admin Notification -->
+  <g transform="translate(90, 295)">
+    <rect width="200" height="108" rx="12" fill="white" filter="url(#shadow)" stroke="#e8944a" stroke-width="1.5"/>
+    <rect width="200" height="28" rx="12" fill="url(#accent)" ry="0"/>
+    <rect x="0" y="12" width="200" height="16" fill="url(#accent)"/>
+    <text x="100" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="white">管理者通知メール</text>
+
+    <!-- Mini email -->
+    <g transform="translate(14, 36)">
+      <rect width="172" height="58" rx="4" fill="#fff7ed" stroke="#fcd9b6" stroke-width="1"/>
+      <text x="8" y="14" font-size="8" fill="#333" font-weight="600">件名: 新規お問い合わせ</text>
+      <line x1="4" y1="20" x2="168" y2="20" stroke="#fcd9b6"/>
+      <text x="8" y="32" font-size="7" fill="#666">お名前: 山田太郎</text>
+      <text x="8" y="42" font-size="7" fill="#666">内容: DXの相談です...</text>
+      <rect x="8" y="47" width="88" height="8" rx="2" fill="#e8944a" opacity="0.8"/>
+      <text x="52" y="54" text-anchor="middle" font-size="5.5" fill="white" font-weight="600">スプレッドシートを開く</text>
+    </g>
+  </g>
+
+  <!-- Output 3: Auto Reply -->
+  <g transform="translate(336, 295)">
+    <rect width="200" height="108" rx="12" fill="white" filter="url(#shadow)" stroke="#4285f4" stroke-width="1.5"/>
+    <rect width="200" height="28" rx="12" fill="url(#blue)" ry="0"/>
+    <rect x="0" y="12" width="200" height="16" fill="url(#blue)"/>
+    <text x="100" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="white">自動返信メール</text>
+
+    <!-- Mini email -->
+    <g transform="translate(14, 36)">
+      <rect width="172" height="58" rx="4" fill="#e8f0fe" stroke="#a8c7fa" stroke-width="1"/>
+      <text x="8" y="14" font-size="8" fill="#333" font-weight="600">From: info@example.com</text>
+      <line x1="4" y1="20" x2="168" y2="20" stroke="#a8c7fa"/>
+      <text x="8" y="32" font-size="7" fill="#666">山田様、お問い合わせ</text>
+      <text x="8" y="42" font-size="7" fill="#666">ありがとうございます。</text>
+      <text x="8" y="52" font-size="7" fill="#666">2営業日以内にご連絡...</text>
+    </g>
+  </g>
+
+  <!-- Arrows connecting GAS to outputs 2 and 3 -->
+  <path d="M 660 220 L 660 250 Q 660 265 645 265 L 200 265 Q 190 265 190 275 L 190 295" fill="none" stroke="#e8944a" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <polygon points="185,292 190,302 195,292" fill="#e8944a"/>
+
+  <path d="M 722 220 L 722 250 Q 722 260 710 260 L 445 260 Q 436 260 436 270 L 436 295" fill="none" stroke="#4285f4" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <polygon points="431,292 436,302 441,292" fill="#4285f4"/>
+
+  <!-- Cost badge -->
+  <g transform="translate(365, 440)">
+    <rect width="170" height="36" rx="18" fill="#1a1a2e" filter="url(#shadow)"/>
+    <text x="85" y="16" text-anchor="middle" font-size="10" fill="#e8944a" font-weight="700">TOTAL COST</text>
+    <text x="85" y="30" text-anchor="middle" font-size="13" font-weight="800" fill="white">¥0 / 月</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(32, 450)">
+    <text x="0" y="0" font-size="9" fill="#999">スパム対策: ハニーポット（CSS非表示フィールド）</text>
+    <text x="0" y="14" font-size="9" fill="#999">通信: fetch POST (mode: no-cors, Content-Type: text/plain)</text>
+    <text x="0" y="28" font-size="9" fill="#999">認証: GAS「自分として実行」＋「全員アクセス可」</text>
+  </g>
+
+  <!-- Tech stack mini badges -->
+  <g transform="translate(640, 456)">
+    <rect width="50" height="16" rx="8" fill="#f3e8ff"/>
+    <text x="25" y="12" text-anchor="middle" font-size="7" fill="#7c3aed" font-weight="600">HTML/JS</text>
+    <rect x="56" y="0" width="36" height="16" rx="8" fill="#fff7ed"/>
+    <text x="74" y="12" text-anchor="middle" font-size="7" fill="#c2702a" font-weight="600">GAS</text>
+    <rect x="98" y="0" width="52" height="16" rx="8" fill="#e8f5e9"/>
+    <text x="124" y="12" text-anchor="middle" font-size="7" fill="#2d7a3a" font-weight="600">Sheets</text>
+    <rect x="156" y="0" width="46" height="16" rx="8" fill="#e3f2fd"/>
+    <text x="179" y="12" text-anchor="middle" font-size="7" fill="#1565c0" font-weight="600">Gmail</text>
+  </g>
+</svg>
