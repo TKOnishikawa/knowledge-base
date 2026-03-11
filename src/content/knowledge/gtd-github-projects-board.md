@@ -111,6 +111,36 @@ Waiting に移したら必ず **コメントを残す**。
 
 ---
 
+## Claude Codeとの連携（仕組み化）
+
+### `/task-review` Skill
+
+`~/.claude/skills/task-review.md` として登録することで、Claude Codeに「週次レビューをやって」と言うだけで自動実行できる。
+
+```
+毎週月曜：「/task-review」と入力するだけ
+  → INBOX（ステータスなし）を全件表示
+  → 対話しながら Next Action / Waiting / close を振り分け
+  → Waitingには自動でコメント追加
+  → 今週のフォーカス3件を確認
+```
+
+### Issue追加もClaude Codeから
+
+「〇〇タスクを追加して」と言えばそのままIssueを作成できる。
+ステータスなし（INBOX）で自動登録される。
+
+### ベストプラクティス（調査で判明した知見）
+
+| 原則 | 内容 |
+|------|------|
+| ステータスなし=INBOX | GitHub ProjectsはAPIでデフォルト値設定不可 → これが最適解 |
+| チェックリスト一択 | 子Issueは公式機能として存在しない。チェックリストで十分 |
+| In Progress は最大3件 | 超えたら「本当に今やってる？」と自問 |
+| Waiting には必ずコメント | 「誰に・何を・いつまで」を記録する |
+
+---
+
 ## セットアップメモ（再現手順）
 
 GitHub Projects V2 の Status フィールドを4カラムに設定するには GraphQL API か UIから変更する。
