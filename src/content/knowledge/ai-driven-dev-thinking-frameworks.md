@@ -598,6 +598,241 @@ source: "Claude Code session 2026-03-14"
     font-size: 0.82em;
     color: var(--text-primary);
   }
+
+  /* ===== Before/After Comparison ===== */
+  .ba-section {
+    background: var(--gray-bg);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 40px;
+  }
+  .ba-section-title {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ba-section-subtitle {
+    font-size: 0.92em;
+    color: var(--text-secondary);
+    margin: 0 0 24px 0;
+  }
+  .ba-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    font-size: 0.88em;
+  }
+  .ba-table th {
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .ba-table th:first-child { border-radius: 8px 0 0 0; }
+  .ba-table th:last-child { border-radius: 0 8px 0 0; }
+  .ba-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gray-border);
+    vertical-align: top;
+  }
+  .ba-table tr:last-child td { border-bottom: none; }
+  .ba-table tr:nth-child(even) td { background: var(--gray-bg); }
+  .ba-table tr:nth-child(odd) td { background: var(--gray-card); }
+  .ba-table .phase-label {
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+  }
+  .ba-before {
+    color: var(--text-secondary);
+  }
+  .ba-after {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .ba-arrow {
+    color: var(--orange);
+    font-weight: 700;
+    margin: 0 4px;
+  }
+
+  /* Auto-change cards */
+  .auto-changes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 24px 0 32px 0;
+  }
+  @media (max-width: 768px) {
+    .auto-changes { grid-template-columns: 1fr; }
+  }
+  .auto-card {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 4px solid var(--navy);
+  }
+  .auto-card-trigger {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 6px 0;
+  }
+  .auto-card-title {
+    font-size: 0.92em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 6px 0;
+  }
+  .auto-card-desc {
+    font-size: 0.82em;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Prompt guide */
+  .prompt-phase {
+    margin-bottom: 24px;
+  }
+  .prompt-phase-title {
+    font-size: 1em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--orange);
+    display: inline-block;
+  }
+  .prompt-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .prompt-list li {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    font-size: 0.85em;
+    color: var(--text-primary);
+    font-family: 'Consolas', 'Source Code Pro', monospace;
+    line-height: 1.5;
+  }
+
+  /* Top 3 habits */
+  .habits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  @media (max-width: 768px) {
+    .habits-grid { grid-template-columns: 1fr; }
+  }
+  .habit-card {
+    background: var(--gray-card);
+    border: 2px solid var(--orange);
+    border-radius: 12px;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .habit-num {
+    background: var(--orange);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .habit-title {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 8px 0;
+  }
+  .habit-desc {
+    font-size: 0.82em;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* ===== Skill Routing Table ===== */
+  .skill-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.88em;
+    margin: 20px 0;
+  }
+  .skill-table th {
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .skill-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-border);
+  }
+  .skill-table tr:last-child td { border-bottom: none; }
+  .skill-table tr:nth-child(even) td { background: var(--gray-bg); }
+  .skill-table tr:nth-child(odd) td { background: var(--gray-card); }
+  .skill-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: #fff;
+    font-size: 0.82em;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-family: 'Consolas', 'Source Code Pro', monospace;
+  }
+  .skill-badge.api { background: #2E7D32; }
+  .skill-badge.app { background: var(--orange); }
+  .skill-badge.sql { background: var(--navy); }
+  .skill-note {
+    font-size: 0.82em;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .architecture-note {
+    background: var(--orange-light);
+    border: 1px solid var(--orange);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 20px 0 0 0;
+    font-size: 0.88em;
+    color: var(--text-primary);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .architecture-note-icon {
+    font-size: 1.4em;
+    flex-shrink: 0;
+  }
 </style>
 
 <div class="mckinsey-article">
@@ -606,6 +841,178 @@ source: "Claude Code session 2026-03-14"
 <div class="hero-banner">
   <h1>AI駆動開発の汎用思考フレームワーク</h1>
   <p class="hero-subtitle">開発プロセス全体の品質と効率を高める — 要件定義・設計・テスト・チーム運営の横断的プラクティス集</p>
+</div>
+
+<!-- ===== WHAT CHANGES: Before → After ===== -->
+<div class="ba-section">
+  <h2 class="ba-section-title">&#9889; 開発プロセスの Before → After</h2>
+  <p class="ba-section-subtitle">このフレームワーク導入で、各フェーズがどう変わるか</p>
+
+  <table class="ba-table">
+    <thead>
+      <tr>
+        <th>フェーズ</th>
+        <th>Before（今まで）</th>
+        <th>After（これから）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="phase-label">要件定義</td>
+        <td class="ba-before">「こんなテーブルほしい」→ 即着手</td>
+        <td class="ba-after">三軸フィルター（D x F x V）で需要・実現性・持続性を検証 <span class="ba-arrow">→</span> プレモーテムで失敗シナリオ3つ <span class="ba-arrow">→</span> 受入条件確定 <span class="ba-arrow">→</span> 着手</td>
+      </tr>
+      <tr>
+        <td class="phase-label">設計</td>
+        <td class="ba-before">1案で進める。判断理由は記憶の中</td>
+        <td class="ba-after">最低2案を比較 <span class="ba-arrow">→</span> ADRで判断理由を記録 <span class="ba-arrow">→</span> コストの桁感を把握 <span class="ba-arrow">→</span> ガードレール設計</td>
+      </tr>
+      <tr>
+        <td class="phase-label">テスト</td>
+        <td class="ba-before">dq-checkerが5カテゴリ</td>
+        <td class="ba-after">dq-checkerが<strong>7次元</strong>（Accuracy・Integrity・Timeliness追加） + セルフレビュー8ステップがPR前チェックに組み込み</td>
+      </tr>
+      <tr>
+        <td class="phase-label">新規PJ開始</td>
+        <td class="ba-before">ゼロから構築</td>
+        <td class="ba-after">team-dev-practice.md の骨格テンプレートが自動提案される</td>
+      </tr>
+      <tr>
+        <td class="phase-label">サブエージェント</td>
+        <td class="ba-before">タスク実行のみ</td>
+        <td class="ba-after">コンテキスト6要素チェックを実行前にセルフチェック <span class="ba-arrow">→</span> 情報不足を自発報告</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Auto-change cards -->
+  <h3 style="font-size: 1.05em; font-weight: 700; color: var(--navy); margin: 0 0 16px 0;">&#9881; 具体的に「自動で変わる」部分</h3>
+  <div class="auto-changes">
+    <div class="auto-card">
+      <p class="auto-card-trigger">/sql-develop 実行時</p>
+      <p class="auto-card-title">Phase 0 で三軸フィルター + プレモーテム</p>
+      <p class="auto-card-desc">D/F/V の懸念があれば質問に自動追加。着手前に需要・実現性・持続性を検証する</p>
+    </div>
+    <div class="auto-card">
+      <p class="auto-card-trigger">/pr-review 実行時</p>
+      <p class="auto-card-title">Phase 4 にセルフレビュー8ステップ</p>
+      <p class="auto-card-desc">必須3点（意図・目視・AI意図確認）にマーク付きで表示される</p>
+    </div>
+    <div class="auto-card">
+      <p class="auto-card-trigger">dq-checker 実行時</p>
+      <p class="auto-card-title">7次元DQチェック（3次元追加）</p>
+      <p class="auto-card-desc">ソーステーブル指定で正確性突合、参照テーブルで孤立レコード、日付カラムでデータ鮮度チェック</p>
+    </div>
+    <div class="auto-card">
+      <p class="auto-card-trigger">新規PJ着手時</p>
+      <p class="auto-card-title">requirements-thinking.md 自動参照</p>
+      <p class="auto-card-desc">CLAUDE.md のルーティングで、新規PJ着手時に汎用フレームワークが自動ロードされる</p>
+    </div>
+  </div>
+
+  <!-- Skill Routing -->
+  <h3 style="font-size: 1.05em; font-weight: 700; color: var(--navy); margin: 32px 0 16px 0;">&#128268; Skill 使い分け早見表</h3>
+  <table class="skill-table">
+    <thead>
+      <tr>
+        <th>やりたいこと</th>
+        <th>Skill</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Meta広告データをBQに日次連携</td>
+        <td><span class="skill-badge api">/api-develop</span></td>
+      </tr>
+      <tr>
+        <td>kintoneで注文書管理アプリ</td>
+        <td><span class="skill-badge app">/app-develop</span></td>
+      </tr>
+      <tr>
+        <td>Slack通知の自動化</td>
+        <td><span class="skill-badge api">/api-develop</span></td>
+      </tr>
+      <tr>
+        <td>ダッシュボード画面構築</td>
+        <td><span class="skill-badge app">/app-develop</span></td>
+      </tr>
+      <tr>
+        <td>画面 + API連携（ハイブリッド）</td>
+        <td><span class="skill-badge app">/app-develop</span><div class="skill-note">API部分は /api-develop Phase 1 を参照</div></td>
+      </tr>
+      <tr>
+        <td>BQマートテーブル構築</td>
+        <td><span class="skill-badge sql">/sql-develop</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="architecture-note">
+    <span class="architecture-note-icon">&#128279;</span>
+    <div><strong>二層構造（Rule x Skill）</strong>: 3つのSkillが同じRule層（requirements-thinking.md, design-thinking.md等）を参照する。どのSkillでも品質プロセスが統一される Single Source of Truth アーキテクチャ。</div>
+  </div>
+</div>
+
+<!-- ===== HOW TO MAXIMIZE: Prompt Guide ===== -->
+<div class="ba-section">
+  <h2 class="ba-section-title">&#128640; 最大限に活かすためのプロンプトガイド</h2>
+  <p class="ba-section-subtitle">各フェーズで意識的に投げるべきプロンプト</p>
+
+  <div class="prompt-phase">
+    <h4 class="prompt-phase-title">要件定義時</h4>
+    <ul class="prompt-list">
+      <li>「D x F x V で見落としない？特にV（持続性）で運用コスト・保守体制を確認して」</li>
+      <li>「プレモーテムやって。失敗シナリオ3つ以上挙げて」</li>
+      <li>「受入条件12項目で、この開発に該当するものを整理して」</li>
+    </ul>
+  </div>
+
+  <div class="prompt-phase">
+    <h4 class="prompt-phase-title">設計時</h4>
+    <ul class="prompt-list">
+      <li>「別のアプローチを2つ提案して。比較表で見せて」</li>
+      <li>「この判断はADRに残す価値ある？トレードオフは何？」</li>
+      <li>「コストの桁感を教えて（月額$1/$10/$100のどれ？）」</li>
+      <li>「ガードレールはどのレベルから始める？」</li>
+    </ul>
+  </div>
+
+  <div class="prompt-phase">
+    <h4 class="prompt-phase-title">テスト・PR前</h4>
+    <ul class="prompt-list">
+      <li>「セルフレビュー8ステップやって。特に1（意図）と7（AI意図確認）」</li>
+      <li>「DQ 7次元で今回必須なのはどれ？Accuracy突合は必要？」</li>
+      <li>「回帰テスト: この変更で下流のダッシュボード/レポートに影響ある？」</li>
+    </ul>
+  </div>
+
+  <div class="prompt-phase">
+    <h4 class="prompt-phase-title">新規PJ開始時</h4>
+    <ul class="prompt-list">
+      <li>「team-dev-practice.md の骨格テンプレートでプロジェクト構造作って」</li>
+      <li>「仕様書ファーストで、まず目的・スコープ・受入条件だけ書いて」</li>
+      <li>「Issue-driven でブランチ切って」</li>
+    </ul>
+  </div>
+
+  <!-- Top 3 Habits -->
+  <h3 style="font-size: 1.05em; font-weight: 700; color: var(--navy); margin: 32px 0 16px 0;">&#127942; 最も重要な3つの習慣</h3>
+  <div class="habits-grid">
+    <div class="habit-card">
+      <div class="habit-num">1</div>
+      <h4 class="habit-title">「なぜ」を先に言語化する</h4>
+      <p class="habit-desc">プロンプトに「これは〜のために作る」を必ず含める。コンテキストの質が成果物の質を決める</p>
+    </div>
+    <div class="habit-card">
+      <div class="habit-num">2</div>
+      <h4 class="habit-title">2案比較を癖にする</h4>
+      <p class="habit-desc">「これでいいよね？」ではなく「他にある？」と聞く。Rule側で代替案提案が組み込まれたので、促せば出てくる</p>
+    </div>
+    <div class="habit-card">
+      <div class="habit-num">3</div>
+      <h4 class="habit-title">セルフレビュー3点は飛ばさない</h4>
+      <p class="habit-desc">特に 7（AI意図確認）— AIが書いたコードを「説明して」と聞いて、自分が理解してから採用する</p>
+    </div>
+  </div>
 </div>
 
 <!-- ===== 4 PILLARS ===== -->
