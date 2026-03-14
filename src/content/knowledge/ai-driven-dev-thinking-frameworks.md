@@ -13,6 +13,7 @@ source: "Claude Code session 2026-03-14"
 ---
 
 <style>
+  /* Override global dark theme for this article only */
   :root {
     --navy: #1B2A4A;
     --navy-light: #2C4066;
@@ -24,6 +25,23 @@ source: "Claude Code session 2026-03-14"
     --orange-light: #FFF4EC;
     --text-primary: #1B2A4A;
     --text-secondary: #5A6578;
+    --bg-base: #FFFFFF;
+    --bg-surface: #F7F8FA;
+    --bg-raised: #FFFFFF;
+    --bg-top: #F0F1F5;
+    --text: #1B2A4A;
+    --text-dim: #5A6578;
+    --text-muted: #8A93A5;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(232, 119, 34, 0.3);
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #1B2A4A !important;
   }
 
   .mckinsey-article {
