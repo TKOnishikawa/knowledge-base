@@ -30,7 +30,7 @@ source: "Claude Code session 2026-03-14 + Grok Web Search + Gemini Deep Research
 
 左ナビゲーション付きの高品質HTMLレポートは以下で閲覧可能です：
 
-**[AI駆動開発 構築編（HTML版）](/ai-driven-dev-construction.html)**
+**[AI駆動開発 構築編（HTML版）](/knowledge-base/ai-driven-dev-construction.html)**
 
 McKinsey品質のインフォグラフィック、フローチャート、比較表を多用した視覚的なドキュメントです。
 

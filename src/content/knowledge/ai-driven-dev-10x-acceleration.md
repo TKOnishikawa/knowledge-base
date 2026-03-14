@@ -27,7 +27,7 @@ source: "Claude Code session 2026-03-14 + Gemini Deep Research + Grok Web Search
 
 左ナビゲーション付きの高品質HTMLレポートは以下で閲覧可能です：
 
-**[AI駆動開発 10x加速ガイド（HTML版）](/ai-driven-dev-10x.html)**
+**[AI駆動開発 10x加速ガイド（HTML版）](/knowledge-base/ai-driven-dev-10x.html)**
 
 McKinsey品質のインフォグラフィック、フローチャート、比較表を多用した視覚的なドキュメントです。
 
