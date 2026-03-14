@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI駆動開発 構築編 — API統合・エージェントオーケストレーション</title>
+<title>AI駆動開発 構築編 — API統合・エージェント・IaC・n8n・モニタリング・セキュリティ</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -941,6 +941,30 @@ td:first-child { font-weight: 500; color: var(--text-1); }
   </div>
 
   <div class="nav-group">
+    <div class="nav-group-label">Infrastructure as Code</div>
+    <a href="#iac-tools" class="nav-link">11. IaCツール選定</a>
+    <a href="#bq-schedule" class="nav-link">12. BQスケジュール管理</a>
+    <a href="#deploy-improve" class="nav-link">13. デプロイ改善</a>
+    <a href="#env-separation" class="nav-link">14. 環境分離</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">n8n Orchestration</div>
+    <a href="#n8n-deploy" class="nav-link">15. Cloud Runデプロイ</a>
+    <a href="#n8n-vs-native" class="nav-link">16. n8n vs GCPネイティブ</a>
+    <a href="#n8n-claude" class="nav-link">17. Claude連携</a>
+    <a href="#zapier-migration" class="nav-link">18. Zapier移行</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Monitoring & Security</div>
+    <a href="#monitoring-min" class="nav-link">19. 最小監視構成</a>
+    <a href="#alert-design" class="nav-link">20. アラート設計</a>
+    <a href="#secret-mgr" class="nav-link">21. Secret Manager</a>
+    <a href="#incident" class="nav-link">22. インシデント対応</a>
+  </div>
+
+  <div class="nav-group">
     <div class="nav-group-label">Reference</div>
     <a href="#sources" class="nav-link">ソース一覧</a>
   </div>
@@ -953,10 +977,10 @@ td:first-child { font-weight: 500; color: var(--text-1); }
 <div class="hero" id="overview">
   <div class="hero-inner">
     <div class="hero-badge">Construction Guide &mdash; 2026.03</div>
-    <h1>AI駆動開発 <em>構築編</em><br>API統合・エージェントオーケストレーション</h1>
+    <h1>AI駆動開発 <em>構築編</em><br>6軸の構築判断ガイド</h1>
     <p class="lead">
       非エンジニアDXコンサルタントのための構築判断ガイド。<br>
-      Meta / Google / Salesforce API統合と、マルチエージェント広告運用システムの設計原則をまとめた実行リファレンス。
+      API統合、エージェント、IaC、n8n、モニタリング、セキュリティの6軸で構築に必要な判断基準をまとめた実行リファレンス。
     </p>
     <div class="hero-meta">
       <span><strong>調査手法</strong> Grok Web Search + Gemini Deep Research</span>
@@ -2075,6 +2099,501 @@ key = <span class="string">f"{campaign_id}:{hashlib.sha256(ad_spec.encode()).hex
   </div>
 </section>
 
+<!-- ===== IaC SECTIONS ===== -->
+<section class="section" id="iac-tools">
+  <div class="section-label purple">Infrastructure as Code</div>
+  <h2 class="section-title">11. IaCツール選定フローチャート</h2>
+  <p class="section-desc">手動コンソール操作 + deploy.sh（164行）の現状から、最小限のIaCアプローチで再現性と変更管理を確保する。</p>
+
+  <div class="callout amber">
+    <div class="callout-title">&#9888; Cloud Deployment Manager サポート終了</div>
+    Cloud Deployment Manager は <strong>2026年3月31日にサポート終了</strong>。即時Terraform移行が必要。GCP公式推奨は <strong>Terraform + Infrastructure Manager</strong>。
+  </div>
+
+  <div class="flow-diagram">
+    <div class="flow-title">IaCツール選定フロー</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="flow-step-num">Q1</div><div class="flow-step-text">シェルスクリプトに慣れている？<br><span style="color:var(--green)">YES → gcloud CLIから開始</span></div></div>
+      <div class="flow-arrow">&darr;</div>
+      <div class="flow-step"><div class="flow-step-num">Q2</div><div class="flow-step-text">マルチクラウドの可能性？<br><span style="color:var(--green)">YES → Terraform一択</span></div></div>
+      <div class="flow-arrow">&darr;</div>
+      <div class="flow-step"><div class="flow-step-num">Q3</div><div class="flow-step-text">プログラミング経験あり？<br><span style="color:var(--green)">YES → Pulumi/CDKTFも選択肢</span><br><span style="color:var(--blue)">NO → Terraform (HCL) が最適</span></div></div>
+    </div>
+  </div>
+
+  <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="comparison-block" style="border-top: 3px solid var(--green);">
+      <h4 style="color:var(--green);">gcloud CLI</h4>
+      <div class="stat-highlight" style="--highlight-color: var(--green);">
+        <div class="stat-value">&#9733;&#9733;&#9733;</div>
+        <div class="stat-label">学習コスト最低</div>
+      </div>
+      <ul style="font-size:13px;margin-top:12px;">
+        <li>即開始可能（インストール済み）</li>
+        <li>最小コードでデプロイ</li>
+        <li>&#9888; 状態管理なし</li>
+        <li>&#9888; 複雑化でエラー多発</li>
+      </ul>
+      <div style="font-size:12px;color:var(--text-3);margin-top:8px;">最初のステップとして最適</div>
+    </div>
+    <div class="comparison-block" style="border-top: 3px solid var(--blue);">
+      <h4 style="color:var(--blue);">Terraform + Infra Manager</h4>
+      <div class="stat-highlight" style="--highlight-color: var(--blue);">
+        <div class="stat-value">&#9733;&#9733;&#9733;</div>
+        <div class="stat-label">長期的に最適</div>
+      </div>
+      <ul style="font-size:13px;margin-top:12px;">
+        <li>plan/applyで安全なデプロイ</li>
+        <li>状態管理・ロールバック</li>
+        <li>GCP公式推奨</li>
+        <li>HCL学習 1-2日</li>
+      </ul>
+      <div style="font-size:12px;color:var(--text-3);margin-top:8px;">1人チームの定常運用に最適</div>
+    </div>
+    <div class="comparison-block" style="border-top: 3px solid var(--text-3);">
+      <h4 style="color:var(--text-3);">Pulumi / CDKTF</h4>
+      <div class="stat-highlight" style="--highlight-color: var(--text-3);">
+        <div class="stat-value">&#9733;&#9733;</div>
+        <div class="stat-label">オーバースペック</div>
+      </div>
+      <ul style="font-size:13px;margin-top:12px;">
+        <li>汎用言語で記述可能</li>
+        <li>テスト容易</li>
+        <li>&#9888; 言語の学習コスト</li>
+        <li>&#9888; SDK必要</li>
+      </ul>
+      <div style="font-size:12px;color:var(--text-3);margin-top:8px;">1人チームでは不要</div>
+    </div>
+  </div>
+
+  <div class="checklist">
+    <div class="checklist-title">1人チームの判断基準</div>
+    <div class="check-item"><span class="check-icon green">&#10004;</span> gcloud CLIスクリプトの構造化（今すぐ）</div>
+    <div class="check-item"><span class="check-icon green">&#10004;</span> Terraform導入検討（長期的に）</div>
+    <div class="check-item"><span class="check-icon red">&#10008;</span> Cloud Deployment Manager（廃止間近）</div>
+    <div class="check-item"><span class="check-icon red">&#10008;</span> Pulumi/CDKTFの即時導入</div>
+  </div>
+</section>
+
+<section class="section" id="bq-schedule">
+  <div class="section-label purple">Infrastructure as Code</div>
+  <h2 class="section-title">12. BQスケジュールクエリのコード管理</h2>
+  <p class="section-desc">コンソール手動管理からコード管理への段階的移行パターン。</p>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--green);"></div>
+      <div class="timeline-content">
+        <h4>Phase 1: ドキュメント化</h4>
+        <p>既存スケジュールを <code>gcloud bq</code> コマンドでエクスポート。設定をMarkdownで記録。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--blue);"></div>
+      <div class="timeline-content">
+        <h4>Phase 2: gcloud CLI スクリプト化</h4>
+        <p>新規スケジュールは <code>bq mk --transfer_config</code> で作成。Git管理開始。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--purple);"></div>
+      <div class="timeline-content">
+        <h4>Phase 3: Terraform化</h4>
+        <p><code>google_bigquery_data_transfer_config</code> リソースで宣言的管理。plan/applyで安全な変更。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">gcloud CLIでのスケジュールクエリ作成</div>
+    <pre><code>bq mk --transfer_config \
+  --project_id=bigquery-459908 \
+  --data_source=scheduled_query \
+  --target_dataset=analytics_report_customer \
+  --display_name="日次レポート更新" \
+  --schedule="every 24 hours" \
+  --params='{"query":"SELECT ...","destination_table_name_template":"report_{run_date}"}'</code></pre>
+  </div>
+</section>
+
+<section class="section" id="deploy-improve">
+  <div class="section-label purple">Infrastructure as Code</div>
+  <h2 class="section-title">13. Cloud Runデプロイの改善</h2>
+  <p class="section-desc">deploy.sh（164行）の構造化とロールバック戦略。</p>
+
+  <table class="data-table">
+    <thead><tr><th>改善原則</th><th>内容</th><th>効果</th></tr></thead>
+    <tbody>
+      <tr><td><strong>関数分離</strong></td><td>build / push / deploy / verify を個別関数に</td><td>単体テスト・部分再実行可能</td></tr>
+      <tr><td><strong>設定外出し</strong></td><td>.env.prod, .env.dev で環境変数分離</td><td>環境切替が安全</td></tr>
+      <tr><td><strong>ドライラン</strong></td><td>--dry-run フラグで実行前確認</td><td>誤デプロイ防止</td></tr>
+      <tr><td><strong>ロールバック</strong></td><td>gcloud run services update-traffic --to-revisions=PREV=100</td><td>1コマンドで復旧</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout blue">
+    <div class="callout-title">Blue/Green デプロイは不要</div>
+    小規模（月数千リクエスト）では Blue/Green はオーバースペック。Cloud Run のリビジョン管理 + トラフィック分割で十分な安全性を確保できる。
+  </div>
+</section>
+
+<section class="section" id="env-separation">
+  <div class="section-label purple">Infrastructure as Code</div>
+  <h2 class="section-title">14. 環境分離の最小パターン</h2>
+  <p class="section-desc">1人チーム推奨: プロジェクト分離ではなくデータセット分離でコストを抑える。</p>
+
+  <div class="card-grid cols-3">
+    <div class="card">
+      <div class="card-tag green">BigQuery</div>
+      <h3>データセットプレフィックス</h3>
+      <p>dev_analytics_report/ staging_analytics_report/ analytics_report_*</p>
+      <div style="font-size:12px;color:var(--green);font-weight:600;">コスト影響: なし</div>
+    </div>
+    <div class="card">
+      <div class="card-tag blue">Cloud Run</div>
+      <h3>サービス名サフィックス</h3>
+      <p>my-service-dev / my-service-staging / my-service</p>
+      <div style="font-size:12px;color:var(--green);font-weight:600;">コスト影響: min-instances=0なら微小</div>
+    </div>
+    <div class="card">
+      <div class="card-tag purple">スケジュールクエリ</div>
+      <h3>宛先データセット分離</h3>
+      <p>テスト用スケジュールはdev_データセットに書込み</p>
+      <div style="font-size:12px;color:var(--green);font-weight:600;">コスト影響: なし</div>
+    </div>
+  </div>
+
+  <div class="checklist">
+    <div class="checklist-title">環境分離の判断</div>
+    <div class="check-item"><span class="check-icon green">&#10004;</span> BQデータセット分離（今すぐ）</div>
+    <div class="check-item"><span class="check-icon green">&#10004;</span> Cloud Runリビジョン管理</div>
+    <div class="check-item"><span class="check-icon red">&#10008;</span> GCPプロジェクト分離（1人チームではオーバーヘッド大）</div>
+    <div class="check-item"><span class="check-icon red">&#10008;</span> Terraform stateの複雑な管理</div>
+  </div>
+</section>
+
+<!-- ===== n8n SECTIONS ===== -->
+<section class="section" id="n8n-deploy">
+  <div class="section-label cyan">n8n Orchestration</div>
+  <h2 class="section-title">15. n8n Cloud Runデプロイパターン</h2>
+  <p class="section-desc">n8nはステートフルだがCloud Runはステートレス前提 &mdash; <code>min-instances=1</code> + Cloud SQL で解決。</p>
+
+  <div class="code-block">
+    <div class="code-header">最小デプロイコマンド</div>
+    <pre><code>gcloud run deploy n8n \
+  --image n8nio/n8n:latest \
+  --region asia-northeast1 \
+  --min-instances 1 --max-instances 2 \
+  --memory 1Gi --cpu 1 \
+  --set-env-vars "DB_TYPE=postgresdb,DB_POSTGRESDB_HOST=/cloudsql/PROJECT:REGION:INSTANCE" \
+  --add-cloudsql-instances PROJECT:REGION:INSTANCE \
+  --allow-unauthenticated</code></pre>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>永続ストレージ</th><th>メリット</th><th>デメリット</th><th>月額目安</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--green);">Cloud SQL (PostgreSQL)</strong></td><td>信頼性&#9733;&#9733;&#9733;、バックアップ自動</td><td>コスト高</td><td>$10-30</td></tr>
+      <tr><td>SQLite on Cloud Storage</td><td>最安</td><td>同時アクセス不可、遅い</td><td>$1-3</td></tr>
+      <tr><td>Firestore</td><td>サーバーレス</td><td>n8n未対応</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value" style="color:var(--green);">$15-35</div>
+      <div class="kpi-label">月額コスト目安</div>
+      <div class="kpi-desc">Cloud SQL (db-f1-micro) + min-instances=1</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value" style="color:var(--blue);">&#8734;</div>
+      <div class="kpi-label">タスク数制限</div>
+      <div class="kpi-desc">Zapier ($69-299) の制限なし</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="n8n-vs-native">
+  <div class="section-label cyan">n8n Orchestration</div>
+  <h2 class="section-title">16. n8n vs GCPネイティブ比較</h2>
+  <p class="section-desc">非エンジニアがワークフローを自分で作成・変更したいなら n8n。開発者管理のイベント駆動なら Cloud Workflows。</p>
+
+  <table class="data-table">
+    <thead><tr><th>項目</th><th>n8n</th><th>Cloud Workflows</th><th>Cloud Functions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>UI</strong></td><td style="color:var(--green);">&#9733;&#9733;&#9733; ビジュアルエディタ</td><td>&#9733; YAML定義</td><td>&times; コードのみ</td></tr>
+      <tr><td><strong>非エンジニア適性</strong></td><td style="color:var(--green);">&#9733;&#9733;&#9733; ドラッグ&ドロップ</td><td>&#9733; 要YAML</td><td>&times; 要コード</td></tr>
+      <tr><td><strong>コスト</strong></td><td>&#9733;&#9733; セルフホスト固定費</td><td style="color:var(--green);">&#9733;&#9733;&#9733; 従量課金</td><td style="color:var(--green);">&#9733;&#9733;&#9733; 従量課金</td></tr>
+      <tr><td><strong>Claude連携</strong></td><td style="color:var(--green);">&#9733;&#9733;&#9733; HTTPノード</td><td>&#9733;&#9733; HTTPコール</td><td style="color:var(--green);">&#9733;&#9733;&#9733; SDK直接</td></tr>
+      <tr><td><strong>外部サービス</strong></td><td style="color:var(--green);">&#9733;&#9733;&#9733; 400+ノード</td><td>&#9733; コネクタ少</td><td>&#9733;&#9733; 自由</td></tr>
+      <tr><td><strong>運用負荷</strong></td><td>&#9733; 自己管理</td><td style="color:var(--green);">&#9733;&#9733;&#9733; フルマネージド</td><td style="color:var(--green);">&#9733;&#9733;&#9733; フルマネージド</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section" id="n8n-claude">
+  <div class="section-label cyan">n8n Orchestration</div>
+  <h2 class="section-title">17. Claude Code &harr; n8n 統合パターン</h2>
+
+  <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="comparison-block" style="border-top: 3px solid var(--green);">
+      <h4 style="color:var(--green);">A: n8n &rarr; Claude API</h4>
+      <p style="font-size:13px;"><strong>n8nのHTTPノード</strong>からClaude APIを呼び出し</p>
+      <div class="stat-highlight" style="--highlight-color: var(--green);">
+        <div class="stat-value">&#9733;&#9733;&#9733;</div>
+        <div class="stat-label">推奨（最初のステップ）</div>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);margin-top:8px;">ワークフロー内でAI処理を実行</p>
+    </div>
+    <div class="comparison-block" style="border-top: 3px solid var(--blue);">
+      <h4 style="color:var(--blue);">B: Claude &rarr; n8n API</h4>
+      <p style="font-size:13px;"><strong>Claude Code Skill</strong>からn8n Webhook URLを呼び出し</p>
+      <div class="stat-highlight" style="--highlight-color: var(--blue);">
+        <div class="stat-value">&#9733;&#9733;</div>
+        <div class="stat-label">中程度</div>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);margin-top:8px;">Claude Codeからワークフロー起動</p>
+    </div>
+    <div class="comparison-block" style="border-top: 3px solid var(--purple);">
+      <h4 style="color:var(--purple);">C: MCP双方向</h4>
+      <p style="font-size:13px;"><strong>n8n MCP Server</strong>でリアルタイム連携</p>
+      <div class="stat-highlight" style="--highlight-color: var(--purple);">
+        <div class="stat-value">&#9733;</div>
+        <div class="stat-label">複雑（将来的に）</div>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);margin-top:8px;">完全自律的な双方向連携</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="zapier-migration">
+  <div class="section-label cyan">n8n Orchestration</div>
+  <h2 class="section-title">18. Zapier &rarr; n8n 移行チェックリスト</h2>
+
+  <table class="data-table">
+    <thead><tr><th>項目</th><th>Zapier (Team)</th><th>n8n (Self-host)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>月額</strong></td><td>$69-299+</td><td style="color:var(--green);font-weight:700;">$15-35</td></tr>
+      <tr><td><strong>タスク制限</strong></td><td>2,000-50,000/月</td><td style="color:var(--green);font-weight:700;">無制限</td></tr>
+      <tr><td><strong>ワークフロー数</strong></td><td>プラン依存</td><td style="color:var(--green);font-weight:700;">無制限</td></tr>
+      <tr><td><strong>カスタムコード</strong></td><td>制限あり</td><td style="color:var(--green);font-weight:700;">Node.js自由</td></tr>
+    </tbody>
+  </table>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--green);"></div>
+      <div class="timeline-content"><h4>Step 1</h4><p>新規ワークフローはn8nで作成</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--blue);"></div>
+      <div class="timeline-content"><h4>Step 2</h4><p>既存Zapはそのまま稼働（並行運用 1-2ヶ月）</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--amber);"></div>
+      <div class="timeline-content"><h4>Step 3</h4><p>重要度低いZapから順次n8nに移植</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--red);"></div>
+      <div class="timeline-content"><h4>Step 4</h4><p>全移植完了後にZapier解約</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MONITORING & SECURITY SECTIONS ===== -->
+<section class="section" id="monitoring-min">
+  <div class="section-label amber">Monitoring &amp; Security</div>
+  <h2 class="section-title">19. 最小監視構成（1人チーム向け）</h2>
+  <p class="section-desc">Cloud Run Job、BQスケジュールクエリ、広告入稿の3システムを最小限かつ効果的に監視。</p>
+
+  <div class="flow-diagram">
+    <div class="flow-title">最小監視アーキテクチャ</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-text"><strong>BQスケジュールクエリ</strong><br>ログベースアラート（失敗検知）</div></div>
+      <div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-text"><strong>Cloud Run Service</strong><br>メトリクスベースアラート（エラー率・レイテンシ）</div></div>
+      <div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-text"><strong>Cloud Run Job</strong><br>ログベースアラート（ジョブ失敗）</div></div>
+      <div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-text"><strong>コスト全体</strong><br>Budget Alert（予算の50/90/100%）</div></div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-2);">&#8595; すべて <strong>Slack Webhook</strong> で通知</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-value" style="color:var(--green);">30-60分</div>
+      <div class="kpi-label">セットアップ時間</div>
+      <div class="kpi-desc">Console操作のみで完了</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value" style="color:var(--blue);">$0</div>
+      <div class="kpi-label">追加コスト</div>
+      <div class="kpi-desc">無料枠内（3ポリシーまで）</div>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>監視方式</th><th>検知対象</th><th>非エンジニア理解</th><th>最適用途</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ログベースアラート</strong></td><td>具体的イベント</td><td style="color:var(--green);">&#9733;&#9733;&#9733; エラーメッセージ直接</td><td>BQ失敗、Job失敗</td></tr>
+      <tr><td><strong>メトリクスベースアラート</strong></td><td>数値の異常</td><td>&#9733;&#9733; 数値の意味理解必要</td><td>Cloud Run Service性能</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section" id="alert-design">
+  <div class="section-label amber">Monitoring &amp; Security</div>
+  <h2 class="section-title">20. アラート設計と通知</h2>
+
+  <h3 style="font-size:16px;margin:20px 0 12px;">推奨アラート閾値（Cloud Run Service）</h3>
+  <table class="data-table">
+    <thead><tr><th>メトリクス</th><th>閾値</th><th>評価期間</th><th>重要度</th></tr></thead>
+    <tbody>
+      <tr><td><strong>エラー率（5xx）</strong></td><td>&gt; 5%</td><td>5分間</td><td style="color:var(--red);font-weight:700;">Critical</td></tr>
+      <tr><td><strong>P99レイテンシ</strong></td><td>&gt; 2秒</td><td>5分間</td><td style="color:var(--amber);font-weight:700;">Warning</td></tr>
+      <tr><td><strong>CPU使用率</strong></td><td>&gt; 80%</td><td>10分間</td><td style="color:var(--amber);font-weight:700;">Warning</td></tr>
+      <tr><td><strong>メモリ使用率</strong></td><td>&gt; 90%</td><td>10分間</td><td style="color:var(--red);font-weight:700;">Critical</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:16px;margin:24px 0 12px;">Slack通知フォーマット設計</h3>
+  <div class="code-block">
+    <div class="code-header">通知フォーマット例</div>
+    <pre><code>&#x1F6A8; [Cloud Run Job 失敗] ad-submission-job
+&#x1F4CD; プロジェクト: bigquery-459908 / asia-northeast1
+&#x23F0; 発生: 2026-03-14 15:30 JST
+&#x274C; エラー: Container exited with code 1
+&#x1F517; 詳細: [Cloud Monitoring リンク]</code></pre>
+  </div>
+
+  <h3 style="font-size:16px;margin:24px 0 12px;">データ品質モニタリング</h3>
+  <div class="code-block">
+    <div class="code-header">行数異常検知SQL（前日比 &plusmn;50%）</div>
+    <pre><code>WITH today AS (
+  SELECT COUNT(*) as cnt FROM `dataset.table`
+  WHERE DATE(_PARTITIONTIME) = CURRENT_DATE()
+),
+yesterday AS (
+  SELECT COUNT(*) as cnt FROM `dataset.table`
+  WHERE DATE(_PARTITIONTIME) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+)
+SELECT CASE
+  WHEN today.cnt &lt; yesterday.cnt * 0.5 THEN ERROR('行数が前日比50%未満')
+  WHEN today.cnt &gt; yesterday.cnt * 1.5 THEN ERROR('行数が前日比150%超')
+  ELSE 'OK'
+END FROM today, yesterday</code></pre>
+  </div>
+</section>
+
+<section class="section" id="secret-mgr">
+  <div class="section-label red">Security &amp; Governance</div>
+  <h2 class="section-title">21. Secret Manager &amp; IAM設計</h2>
+  <p class="section-desc">複数API認証情報の安全な一元管理と最小権限設計。</p>
+
+  <h3 style="font-size:16px;margin:20px 0 12px;">Secret Manager移行ロードマップ</h3>
+  <table class="data-table">
+    <thead><tr><th>優先度</th><th>シークレット</th><th>現在</th><th>移行先</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--red);font-weight:700;">高</td><td>BQ SA キー</td><td>.credentials/bigquery-service-account.json</td><td>Secret Manager</td></tr>
+      <tr><td style="color:var(--red);font-weight:700;">高</td><td>Meta Ads APIキー</td><td>環境変数</td><td>Secret Manager</td></tr>
+      <tr><td style="color:var(--amber);font-weight:700;">中</td><td>Gemini APIキー</td><td>.credentials/gemini-api-key.txt</td><td>Secret Manager</td></tr>
+      <tr><td style="color:var(--text-3);">低</td><td>OAuth2トークン</td><td>~/.claude/credentials/</td><td>現状維持（自動更新）</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:16px;margin:24px 0 12px;">IAMの3要素（非エンジニア向け）</h3>
+  <div class="card-grid cols-3">
+    <div class="card" style="border-top:3px solid var(--blue);">
+      <div class="card-tag blue">Principal</div>
+      <h3>誰が</h3>
+      <p>ユーザーアカウント、サービスアカウント、Googleグループ</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--green);">
+      <div class="card-tag green">Role</div>
+      <h3>何をできるか</h3>
+      <p>閲覧者、編集者、BigQueryデータ閲覧者 etc.</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--amber);">
+      <div class="card-tag amber">Resource</div>
+      <h3>何に対して</h3>
+      <p>プロジェクト、データセット、シークレット etc.</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:16px;margin:24px 0 12px;">推奨SA構成（サービス別分離）</h3>
+  <table class="data-table">
+    <thead><tr><th>SA</th><th>用途</th><th>権限</th></tr></thead>
+    <tbody>
+      <tr><td><code>bq-analytics-sa</code></td><td>BQ読み取り・分析</td><td>bigquery.dataViewer, bigquery.jobUser</td></tr>
+      <tr><td><code>ad-submission-sa</code></td><td>広告入稿システム</td><td>bigquery.dataEditor, secretmanager.secretAccessor</td></tr>
+      <tr><td><code>cloud-run-sa</code></td><td>Cloud Runサービス</td><td>run.invoker, logging.logWriter</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section" id="incident">
+  <div class="section-label red">Security &amp; Governance</div>
+  <h2 class="section-title">22. インシデント対応チェックリスト</h2>
+  <p class="section-desc">トークン漏洩検知から30分以内に完了すべきアクション。</p>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--red);"></div>
+      <div class="timeline-content">
+        <h4 style="color:var(--red);">[0-5分] 即時対応</h4>
+        <ul style="font-size:13px;">
+          <li>漏洩した認証情報を無効化（Secret Manager &rarr; バージョン破棄）</li>
+          <li>SAキーの場合: <code>gcloud iam service-accounts keys delete</code></li>
+          <li>APIキーの場合: 発行元コンソールで無効化</li>
+        </ul>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--amber);"></div>
+      <div class="timeline-content">
+        <h4 style="color:var(--amber);">[5-15分] 影響範囲の特定</h4>
+        <ul style="font-size:13px;">
+          <li>Cloud Audit Logsで漏洩期間中のアクセスを確認</li>
+          <li>不正なAPI呼び出しがないか確認（BigQuery, Meta Ads等）</li>
+          <li>不正アクセス元IPの特定</li>
+        </ul>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--green);"></div>
+      <div class="timeline-content">
+        <h4 style="color:var(--green);">[15-30分] 復旧と通知</h4>
+        <ul style="font-size:13px;">
+          <li>新しい認証情報を生成・配備</li>
+          <li>アプリケーションの動作確認</li>
+          <li>関係者への状況報告</li>
+        </ul>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-marker" style="background:var(--blue);"></div>
+      <div class="timeline-content">
+        <h4 style="color:var(--blue);">[事後] 再発防止</h4>
+        <ul style="font-size:13px;">
+          <li>git-secrets / pre-commit hookの導入</li>
+          <li>Secret Manager自動ローテーションの設定</li>
+          <li>RCA（根本原因分析）の実施</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout red">
+    <div class="callout-title">GitHubへの誤コミット対応</div>
+    BFG Repo-Cleanerで履歴から機密情報を完全削除。<br>
+    <code>java -jar bfg.jar --replace-text passwords.txt repo.git</code><br>
+    <strong>予防策</strong>: <code>.gitignore</code> に <code>.credentials/</code>, <code>*.json</code>（SAキー）を追加。pre-commit hookで機密パターンをスキャン。
+  </div>
+
+  <div class="bq">
+    &ldquo;セキュリティインシデントのコストは、検知から対応までの時間に指数関数的に比例する。最初の30分で80%が決まる。&rdquo;
+    <cite>&mdash; GCP Security Best Practices Guide (2025)</cite>
+  </div>
+</section>
+
 <!-- ===== SOURCES ===== -->
 <section class="section" id="sources">
   <div class="section-label blue">Sources</div>
@@ -2117,6 +2636,39 @@ key = <span class="string">f"{campaign_id}:{hashlib.sha256(ad_spec.encode()).hex
     <li>Multi-Agent Marketing Teams (2026) &mdash; <a href="https://alexgenovese.com/multi-agent-ai-systems-for-marketing-teams-a-practical-guide-to-crewai-in-2026" style="color:var(--blue);">alexgenovese.com</a></li>
     <li>Agentic Agency: Google Ads &mdash; <a href="https://www.linkedin.com/pulse/agentic-agency-how-ai-crews-revolutionizing-google-ads-weilbacher-kgxbe" style="color:var(--blue);">LinkedIn</a></li>
   </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--purple);">Infrastructure as Code</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>GCP IaC Overview &mdash; <a href="https://docs.cloud.google.com/docs/terraform/iac-overview" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Cloud Deployment Manager Deprecation &mdash; <a href="https://docs.cloud.google.com/deployment-manager/docs/deprecations" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Infrastructure Manager (Terraform) &mdash; <a href="https://cloud.google.com/blog/products/management-tools/introducing-infrastructure-manager-powered-by-terraform" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>gcloud CLI Scripting &mdash; <a href="https://docs.cloud.google.com/sdk/docs/scripting-gcloud" style="color:var(--blue);">cloud.google.com</a></li>
+  </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--cyan);">n8nオーケストレーション</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>n8n Official Documentation &mdash; <a href="https://docs.n8n.io/" style="color:var(--blue);">docs.n8n.io</a></li>
+    <li>n8n Docker Deployment &mdash; <a href="https://docs.n8n.io/hosting/installation/docker/" style="color:var(--blue);">docs.n8n.io</a></li>
+    <li>Cloud Run Always-on CPU &mdash; <a href="https://cloud.google.com/run/docs/configuring/cpu-allocation" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Cloud Workflows Overview &mdash; <a href="https://cloud.google.com/workflows/docs/overview" style="color:var(--blue);">cloud.google.com</a></li>
+  </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--amber);">モニタリング &amp; アラート</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>Cloud Monitoring Overview &mdash; <a href="https://cloud.google.com/monitoring/docs" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Cloud Run Monitoring &mdash; <a href="https://docs.cloud.google.com/run/docs/monitoring" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>BigQuery Scheduled Query Alerts &mdash; <a href="https://docs.cloud.google.com/bigquery/docs/create-alert-scheduled-query" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Cloud Monitoring Pricing &mdash; <a href="https://cloud.google.com/stackdriver/pricing" style="color:var(--blue);">cloud.google.com</a></li>
+  </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--red);">セキュリティ &amp; ガバナンス</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>Secret Manager Best Practices &mdash; <a href="https://cloud.google.com/secret-manager/docs/best-practices" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>IAM Best Practices &mdash; <a href="https://cloud.google.com/iam/docs/using-iam-securely" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Cloud Audit Logs &mdash; <a href="https://cloud.google.com/logging/docs/audit" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>IAM Recommender &mdash; <a href="https://cloud.google.com/iam/docs/recommender-overview" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>BFG Repo-Cleaner &mdash; <a href="https://rtyley.github.io/bfg-repo-cleaner/" style="color:var(--blue);">rtyley.github.io</a></li>
+  </ul>
 </section>
 
 </div><!-- /content -->
@@ -2129,8 +2681,9 @@ key = <span class="string">f"{campaign_id}:{hashlib.sha256(ad_spec.encode()).hex
       Grok Web Search + Gemini Deep Research &mdash; 2026-03-14
     </p>
     <p style="margin-top:4px;">
-      Research sources: 7+ technical papers, 15+ case studies, 20+ API documentation references.
-      This document is for internal reference. Target projects: SYSDEVREQ-1173, SYSDEVREQ-1109, Architecture BP v3.
+      Research sources: 10+ technical papers, 20+ case studies, 30+ API documentation references.
+      6-axis construction guide covering API integration, agent orchestration, IaC, n8n, monitoring, and security.
+      Target projects: SYSDEVREQ-1173, SYSDEVREQ-1109, Architecture BP v3.
     </p>
   </div>
 </div>
