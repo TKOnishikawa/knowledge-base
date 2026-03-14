@@ -1874,6 +1874,117 @@ Gemini OCR + kintone連携で自動化し、作業時間を90%削減する。
     </div>
   </details>
 
+  <!-- GitHub基本お作法 -->
+  <details class="accordion">
+    <summary>GitHub チーム開発の基本お作法 — 初心者が押さえるべき6つ</summary>
+    <div class="accordion-body">
+
+      <h4>1. ブランチ運用 —「mainは常に動く状態」を守る</h4>
+      <pre><code>main（本番。壊したらあかん）
+  └── feat/SYSDEVREQ-1173_ocr（作業ブランチ。好きに壊してOK）
+        ↑ ここで作業して、完成したらPRでmainに合流</code></pre>
+      <table class="mini-table">
+        <thead><tr><th>ルール</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td><strong>mainに直接コミットしない</strong></td><td>mainが壊れると全員止まる</td></tr>
+          <tr><td><strong>作業ブランチを切って作業</strong></td><td>失敗してもmainに影響なし</td></tr>
+          <tr><td><strong>PRでレビューしてからマージ</strong></td><td>品質の最終防衛線</td></tr>
+        </tbody>
+      </table>
+      <p>ブランチの一生:</p>
+      <div class="flow-diagram">
+        <span class="flow-step">作成</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">作業</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">push</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">PR作成</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">レビュー</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">マージ</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">ブランチ削除</span>
+      </div>
+      <p>ブランチは<strong>使い捨て</strong>。マージしたら消す。溜め込まない。</p>
+
+      <h4>2. コミットメッセージ — 未来の自分への手紙</h4>
+      <pre><code>❌ 悪い例
+git commit -m "修正"
+git commit -m "update"
+git commit -m "fix"
+
+✅ 良い例
+git commit -m "feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装"
+git commit -m "fix: ISBN13桁のバリデーションでエラーになる問題を修正"</code></pre>
+      <p>フォーマット: <code>{種別}: {何をしたか}</code></p>
+      <table class="mini-table">
+        <thead><tr><th>種別</th><th>使い方</th></tr></thead>
+        <tbody>
+          <tr><td><code>feat:</code></td><td>新機能追加</td></tr>
+          <tr><td><code>fix:</code></td><td>バグ修正</td></tr>
+          <tr><td><code>refactor:</code></td><td>動作は変えずにコード整理</td></tr>
+          <tr><td><code>docs:</code></td><td>ドキュメントだけ変更</td></tr>
+          <tr><td><code>chore:</code></td><td>設定変更・雑務</td></tr>
+        </tbody>
+      </table>
+
+      <h4>3. Pull Request (PR) — コードの「提案書」</h4>
+      <p>PRは「このコードをmainに入れてもいいですか？」という<strong>提案</strong>。</p>
+      <div class="flow-diagram">
+        <span class="flow-step">ブランチをpush</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">PR作成</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Why + What記入</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">レビュー</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">マージ</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">ブランチ削除</span>
+      </div>
+      <p>今は1人開発でも<strong>PRを作る習慣</strong>だけはつけておく。チームメンバーが増えた時にスムーズに移行できる。</p>
+
+      <h4>4. .gitignore — 「何をGitに入れないか」</h4>
+      <pre><code># 絶対にGitに入れたらあかんもの
+.credentials/          # 認証ファイル
+.env                   # 環境変数（実値）
+*.pyc                  # コンパイル済みファイル
+__pycache__/           # Pythonキャッシュ
+node_modules/          # npmパッケージ
+.venv/                 # Python仮想環境</code></pre>
+      <div class="callout">
+        <strong>鉄則:</strong> 一度Gitに入ったシークレットは、削除しても<strong>履歴に残る</strong>。入れる前に防ぐのが鉄則。
+      </div>
+
+      <h4>5. 心構え 3つ</h4>
+      <table class="mini-table">
+        <thead><tr><th>#</th><th>心構え</th><th>具体的には</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><strong>小さくコミット、小さくPR</strong></td><td>1000行の巨大PRより、100行×10本のPR。レビューしやすい＝事故が減る</td></tr>
+          <tr><td>2</td><td><strong>迷ったらコミットしておく</strong></td><td><code>git commit</code> は「セーブポイント」。こまめにセーブしておけば壊しても戻れる</td></tr>
+          <tr><td>3</td><td><strong>壊しても戻せる</strong></td><td>パニックにならず、<code>git stash</code> か <code>git checkout</code> で安全な状態に戻す</td></tr>
+        </tbody>
+      </table>
+
+      <h4>6. 困ったときの緊急コマンド</h4>
+      <pre><code># 変更を一時退避（作業中だけどブランチ切り替えたい）
+git stash
+git stash pop          # 戻す
+
+# 直前のコミットを取り消す（pushする前）
+git reset --soft HEAD~1
+
+# 変更をファイル単位で戻す
+git checkout -- ファイル名
+
+# 今の状態を確認（迷ったらまずこれ）
+git status</code></pre>
+    </div>
+  </details>
+
   <!-- 環境再現性 -->
   <details class="accordion">
     <summary>環境再現性 — 「自分のPCでしか動かない」を防ぐ</summary>
