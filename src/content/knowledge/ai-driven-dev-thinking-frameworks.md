@@ -1710,17 +1710,17 @@ docs/<br>
 <p>Backlog（SYSDEVREQ）か GitHub Issues に起票する。<strong>「何を」だけでなく「なぜ」と「完了条件」を書く</strong>。</p>
 <pre><code>タイトル: FAX注文書のOCR自動読取を実装する
 
-## 背景
+&#35;&#35; 背景
 現在、FAX注文書を手動でkintoneに入力している。
 1日平均20件、1件5分 = 100分/日の作業コスト。
 
-## やりたいこと
+&#35;&#35; やりたいこと
 FAX画像 → Gemini OCR → kintone自動登録
 
-## 完了条件
-- [ ] 書名・数量・注文者名が90%以上の精度で読み取れる
-- [ ] kintoneに自動登録される
-- [ ] エラー時にSlack通知が飛ぶ</code></pre>
+&#35;&#35; 完了条件
+- &#91; &#93; 書名・数量・注文者名が90%以上の精度で読み取れる
+- &#91; &#93; kintoneに自動登録される
+- &#91; &#93; エラー時にSlack通知が飛ぶ</code></pre>
 
 <h4>Step 2: ブランチ作成</h4>
 <pre><code>git checkout -b feat/SYSDEVREQ-1173_ocr-automation</code></pre>
@@ -1746,20 +1746,20 @@ c5f4e3d fix(SYSDEVREQ-1173): ISBN13桁のバリデーション修正
 d6a5f4e feat(SYSDEVREQ-1082): stagingデータセットにカラム追加  ← 別Issue</code></pre>
 
 <h4>Step 4: PR作成（Why を書く）</h4>
-<pre><code>## Why（なぜこの変更が必要か）
+<pre><code>&#35;&#35; Why（なぜこの変更が必要か）
 SYSDEVREQ-1173
 FAX注文書の手動入力に100分/日かかっている。
 Gemini OCR + kintone連携で自動化し、作業時間を90%削減する。
 
-## What（何を変えたか）
+&#35;&#35; What（何を変えたか）
 - Gemini 2.5 Pro でFAX画像をOCR
 - 読取結果をkintone注文書アプリに自動登録
 - エラー時Slack通知
 
-## テスト確認
-- [x] サンプルFAX 10枚で精度92%確認
-- [x] kintone登録成功
-- [x] エラー時Slack通知確認</code></pre>
+&#35;&#35; テスト確認
+- &#91;x&#93; サンプルFAX 10枚で精度92%確認
+- &#91;x&#93; kintone登録成功
+- &#91;x&#93; エラー時Slack通知確認</code></pre>
 
 <h4>「What だけのPR」vs「Why があるPR」</h4>
 <table class="mini-table">
@@ -1948,7 +1948,7 @@ git commit -m "fix: ISBN13桁のバリデーションでエラーになる問題
 <p>今は1人開発でも<strong>PRを作る習慣</strong>だけはつけておく。チームメンバーが増えた時にスムーズに移行できる。</p>
 
 <h4>4. .gitignore — 「何をGitに入れないか」</h4>
-<pre><code># 絶対にGitに入れたらあかんもの
+<pre><code>&#35; 絶対にGitに入れたらあかんもの
 .credentials/          # 認証ファイル
 .env                   # 環境変数（実値）
 *.pyc                  # コンパイル済みファイル
@@ -1970,17 +1970,17 @@ node_modules/          # npmパッケージ
 </table>
 
 <h4>6. 困ったときの緊急コマンド</h4>
-<pre><code># 変更を一時退避（作業中だけどブランチ切り替えたい）
+<pre><code>&#35; 変更を一時退避（作業中だけどブランチ切り替えたい）
 git stash
 git stash pop          # 戻す
 
-# 直前のコミットを取り消す（pushする前）
+&#35; 直前のコミットを取り消す（pushする前）
 git reset --soft HEAD~1
 
-# 変更をファイル単位で戻す
+&#35; 変更をファイル単位で戻す
 git checkout -- ファイル名
 
-# 今の状態を確認（迷ったらまずこれ）
+&#35; 今の状態を確認（迷ったらまずこれ）
 git status</code></pre>
 </div>
 </details>
@@ -1995,7 +1995,7 @@ git status</code></pre>
 
 <h4>解決: .env.example</h4>
 <p>値は空。<strong>「何が必要か」だけ示す</strong>ファイル。</p>
-<pre><code># .env.example（実際の値は入れない）
+<pre><code>&#35; .env.example（実際の値は入れない）
 GEMINI_API_KEY=
 KINTONE_SUBDOMAIN=
 KINTONE_API_TOKEN=</code></pre>
@@ -2034,17 +2034,17 @@ KINTONE_API_TOKEN=</code></pre>
 </ul>
 
 <h4>解決: docs/contracts/ に契約を明文化</h4>
-<pre><code># docs/contracts/kintone-order.md
+<pre><code>&#35; docs/contracts/kintone-order.md
 
-## アプリID: 78（注文書管理）
+&#35;&#35; アプリID: 78（注文書管理）
 
-## 必須フィールド（2026-03-14 時点）
+&#35;&#35; 必須フィールド（2026-03-14 時点）
 - 書名: TEXT（必須）
 - 数量: NUMBER（必須）
 - 注文日: DATE（必須）
 - ISBN: TEXT（任意）
 
-## 変更履歴
+&#35;&#35; 変更履歴
 - 2026-03-14: 初版作成</code></pre>
 
 <h4>Contract Test があると</h4>
