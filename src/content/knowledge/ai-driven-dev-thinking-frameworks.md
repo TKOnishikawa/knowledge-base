@@ -851,6 +851,148 @@ source: "Claude Code session 2026-03-14"
     font-size: 1.4em;
     flex-shrink: 0;
   }
+
+  /* ===== Accordion (details/summary) ===== */
+  .accordion-section {
+    margin: 40px 0;
+  }
+  .accordion-section > h2 {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 20px 0;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--orange);
+  }
+  details.accordion {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  details.accordion[open] {
+    border-color: var(--orange);
+  }
+  details.accordion summary {
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 0.95em;
+    color: var(--navy);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+  }
+  details.accordion summary::-webkit-details-marker { display: none; }
+  details.accordion summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    color: var(--orange);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  details.accordion[open] summary::before {
+    transform: rotate(90deg);
+  }
+  details.accordion summary:hover {
+    background: var(--gray-bg);
+  }
+  .accordion-body {
+    padding: 0 24px 24px 24px;
+    font-size: 0.88em;
+    line-height: 1.8;
+    color: var(--text-primary);
+  }
+  .accordion-body h4 {
+    font-size: 1em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 20px 0 10px 0;
+  }
+  .accordion-body p {
+    margin: 8px 0;
+  }
+  .accordion-body ul, .accordion-body ol {
+    margin: 8px 0 8px 20px;
+  }
+  .accordion-body li {
+    margin-bottom: 6px;
+  }
+  .accordion-body code {
+    background: var(--gray-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+    font-family: 'Consolas', 'Source Code Pro', monospace;
+  }
+  .accordion-body pre {
+    background: var(--navy);
+    color: #eaeaf2;
+    padding: 16px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9em;
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+  .accordion-body pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+  .accordion-body .mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.95em;
+  }
+  .accordion-body .mini-table th {
+    background: var(--gray-bg);
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--navy);
+    border-bottom: 2px solid var(--gray-border);
+  }
+  .accordion-body .mini-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--gray-border);
+    vertical-align: top;
+  }
+  .accordion-body .callout {
+    background: var(--orange-light);
+    border-left: 4px solid var(--orange);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.95em;
+  }
+  .accordion-body .callout strong {
+    color: var(--orange);
+  }
+  .accordion-body .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .flow-step {
+    background: var(--navy);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.88em;
+    font-weight: 600;
+  }
+  .flow-arrow {
+    color: var(--orange);
+    font-weight: 700;
+    font-size: 1.1em;
+  }
 </style>
 
 <div class="mckinsey-article">
@@ -1521,6 +1663,203 @@ docs/<br>
 <div class="insight-box">
   <div class="insight-label">Ultimate Insight</div>
   <p>個別プロジェクトのスキルを量産するのではなく、この5つのフェーズ別フレームワークを反復適用することで、あらゆる開発の品質と効率が継続的に向上する。</p>
+</div>
+
+<!-- ===== DEEP DIVE: Issue-driven & Practices ===== -->
+<div class="accordion-section">
+  <h2>&#128218; 実践ディープダイブ</h2>
+
+  <!-- Issue-driven -->
+  <details class="accordion">
+    <summary>Issue-driven 開発 — 全ての作業を追跡可能にする</summary>
+    <div class="accordion-body">
+
+      <div class="callout">
+        <strong>よくある誤解:</strong> Issue = バグ修正・変更だけ、ではない。<br>
+        <strong>正解:</strong> 新規機能開発もバグ修正もリファクタも改善も、<strong>「これから何かやる」全てにIssueを起票する</strong>。<br>
+        「変更の追跡」は結果論。本質は<strong>「やる理由と完了条件を先に言語化する」</strong>こと。
+      </div>
+
+      <h4>Issueの対象 = やること全部</h4>
+      <table class="mini-table">
+        <thead><tr><th>種別</th><th>Issueタイトル例</th></tr></thead>
+        <tbody>
+          <tr><td>新機能開発</td><td>「注文書OCR自動化を実装する」</td></tr>
+          <tr><td>バグ修正</td><td>「ISBN13桁でバリデーションエラーになる」</td></tr>
+          <tr><td>改善</td><td>「OCR精度を60%→90%に上げる」</td></tr>
+          <tr><td>リファクタ</td><td>「kintone_utils.pyを共通モジュール化する」</td></tr>
+        </tbody>
+      </table>
+
+      <h4>フロー全体像</h4>
+      <div class="flow-diagram">
+        <span class="flow-step">Issue起票</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">ブランチ作成</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Issue番号付きコミット</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">PR作成</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">レビュー</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">マージ</span>
+      </div>
+
+      <h4>Step 1: Issue起票（起点）</h4>
+      <p>Backlog（SYSDEVREQ）か GitHub Issues に起票する。<strong>「何を」だけでなく「なぜ」と「完了条件」を書く</strong>。</p>
+      <pre><code>タイトル: FAX注文書のOCR自動読取を実装する
+
+## 背景
+現在、FAX注文書を手動でkintoneに入力している。
+1日平均20件、1件5分 = 100分/日の作業コスト。
+
+## やりたいこと
+FAX画像 → Gemini OCR → kintone自動登録
+
+## 完了条件
+- [ ] 書名・数量・注文者名が90%以上の精度で読み取れる
+- [ ] kintoneに自動登録される
+- [ ] エラー時にSlack通知が飛ぶ</code></pre>
+
+      <h4>Step 2: ブランチ作成</h4>
+      <pre><code>git checkout -b feat/SYSDEVREQ-1173_ocr-automation</code></pre>
+      <p>命名規約: <code>{種別}/SYSDEVREQ-{番号}_{簡潔な説明}</code></p>
+      <table class="mini-table">
+        <thead><tr><th>種別</th><th>使い方</th></tr></thead>
+        <tbody>
+          <tr><td><code>feat/</code></td><td>新機能</td></tr>
+          <tr><td><code>fix/</code></td><td>バグ修正</td></tr>
+          <tr><td><code>refactor/</code></td><td>リファクタリング</td></tr>
+        </tbody>
+      </table>
+      <p>ブランチ名にIssue番号を入れる理由: ブランチ名を見ただけで「何のための作業か」がわかる。<code>fix-something</code> みたいな曖昧な名前だと、3本溜まった時点で混乱する。</p>
+
+      <h4>Step 3: Issue番号付きコミット</h4>
+      <pre><code>git commit -m "feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装"
+git commit -m "feat(SYSDEVREQ-1173): kintone自動登録を追加"
+git commit -m "fix(SYSDEVREQ-1173): ISBN13桁のバリデーション修正"</code></pre>
+      <p><code>git log --oneline</code> したときに、どのコミットがどのIssueに紐づくか一目でわかる:</p>
+      <pre><code>a3f2c1d feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装
+b4e3d2c feat(SYSDEVREQ-1173): kintone自動登録を追加
+c5f4e3d fix(SYSDEVREQ-1173): ISBN13桁のバリデーション修正
+d6a5f4e feat(SYSDEVREQ-1082): stagingデータセットにカラム追加  ← 別Issue</code></pre>
+
+      <h4>Step 4: PR作成（Why を書く）</h4>
+      <pre><code>## Why（なぜこの変更が必要か）
+SYSDEVREQ-1173
+FAX注文書の手動入力に100分/日かかっている。
+Gemini OCR + kintone連携で自動化し、作業時間を90%削減する。
+
+## What（何を変えたか）
+- Gemini 2.5 Pro でFAX画像をOCR
+- 読取結果をkintone注文書アプリに自動登録
+- エラー時Slack通知
+
+## テスト確認
+- [x] サンプルFAX 10枚で精度92%確認
+- [x] kintone登録成功
+- [x] エラー時Slack通知確認</code></pre>
+
+      <h4>「What だけのPR」vs「Why があるPR」</h4>
+      <table class="mini-table">
+        <thead><tr><th></th><th>What だけ</th><th>Why あり</th></tr></thead>
+        <tbody>
+          <tr><td><strong>3ヶ月後</strong></td><td>「OCR追加した」…で、なんで？</td><td>「100分/日の手動作業を自動化するため」→ なるほど</td></tr>
+          <tr><td><strong>判断の評価</strong></td><td>良かったのか悪かったのかわからない</td><td>「90%削減できたか？」で効果測定できる</td></tr>
+          <tr><td><strong>引き継ぎ</strong></td><td>新メンバーが経緯を追えない</td><td>Issueリンク辿れば全部わかる</td></tr>
+        </tbody>
+      </table>
+
+      <h4>半年後の追跡フロー</h4>
+      <p>「なんでこのコード変えたんやっけ？」と思ったとき:</p>
+      <ol>
+        <li><code>git log</code> でコミットのIssue番号を見つける</li>
+        <li>Issueを開く → 背景・議論・完了条件が全部ある</li>
+        <li>PRを開く → Why・What・テスト結果がある</li>
+      </ol>
+      <p><strong>全部が追跡可能</strong>。これがIssue-driven開発の価値。</p>
+
+      <div class="callout">
+        <strong>始め方:</strong> 今すぐ全部やる必要はない。まずは<strong>PR作成時に「Why」を1行書く</strong>ことから始めるだけで、3ヶ月後に効いてくる。
+      </div>
+    </div>
+  </details>
+
+  <!-- 環境再現性 -->
+  <details class="accordion">
+    <summary>環境再現性 — 「自分のPCでしか動かない」を防ぐ</summary>
+    <div class="accordion-body">
+
+      <h4>問題</h4>
+      <p>「自分のPCでは動くけど、他の環境では動かない」。原因は<strong>「何が必要か」が明示されていない</strong>こと。</p>
+
+      <h4>解決: .env.example</h4>
+      <p>値は空。<strong>「何が必要か」だけ示す</strong>ファイル。</p>
+      <pre><code># .env.example（実際の値は入れない）
+GEMINI_API_KEY=
+KINTONE_SUBDOMAIN=
+KINTONE_API_TOKEN=</code></pre>
+      <p>新しい環境でのセットアップ:</p>
+      <ol>
+        <li><code>.env.example</code> をコピーして <code>.env</code> にリネーム</li>
+        <li>値を埋める</li>
+        <li>動く</li>
+      </ol>
+
+      <h4>3段階の再現性レベル</h4>
+      <table class="mini-table">
+        <thead><tr><th>レベル</th><th>やること</th><th>効果</th></tr></thead>
+        <tbody>
+          <tr><td>最低限</td><td><code>requirements.txt</code> をコミット</td><td>パッケージの再現</td></tr>
+          <tr><td>中級</td><td><code>.env.example</code> を置く（値は空）</td><td>「何が必要か」がわかる</td></tr>
+          <tr><td>上級</td><td>Docker化</td><td>Cloud Runデプロイ時に自然と達成</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- Contract Test -->
+  <details class="accordion">
+    <summary>Contract Test — 外部APIの仕様変更事故を防ぐ</summary>
+    <div class="accordion-body">
+
+      <h4>問題</h4>
+      <p>外部APIの仕様が変わって、ある日突然動かなくなる。「何が期待値だったか」がどこにも書いてない → 原因調査に時間がかかる。</p>
+
+      <h4>具体例: kintone 注文書アプリ</h4>
+      <ul>
+        <li>ある日、管理者がフィールド名を「書名」から「タイトル」に変更</li>
+        <li>スクリプトが突然エラー</li>
+        <li>「何が契約（期待値）だったか」がどこにも書いてない</li>
+      </ul>
+
+      <h4>解決: docs/contracts/ に契約を明文化</h4>
+      <pre><code># docs/contracts/kintone-order.md
+
+## アプリID: 78（注文書管理）
+
+## 必須フィールド（2026-03-14 時点）
+- 書名: TEXT（必須）
+- 数量: NUMBER（必須）
+- 注文日: DATE（必須）
+- ISBN: TEXT（任意）
+
+## 変更履歴
+- 2026-03-14: 初版作成</code></pre>
+
+      <h4>Contract Test があると</h4>
+      <table class="mini-table">
+        <thead><tr><th>場面</th><th>なし</th><th>あり</th></tr></thead>
+        <tbody>
+          <tr><td>API変更時</td><td>何が変わったか調査に時間</td><td>Contract と突き合わせて即座に特定</td></tr>
+          <tr><td>新メンバー参加</td><td>依存関係が不明</td><td>「このフィールドに依存」が一目瞭然</td></tr>
+          <tr><td>障害調査</td><td>原因の切り分けに時間</td><td>契約違反かどうかで即判定</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
 </div>
 
 </div>
