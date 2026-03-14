@@ -1667,48 +1667,48 @@ docs/<br>
 
 <!-- ===== DEEP DIVE: Issue-driven & Practices ===== -->
 <div class="accordion-section">
-  <h2>&#128218; 実践ディープダイブ</h2>
+<h2>&#128218; 実践ディープダイブ</h2>
 
-  <!-- Issue-driven -->
-  <details class="accordion">
-    <summary>Issue-driven 開発 — 全ての作業を追跡可能にする</summary>
-    <div class="accordion-body">
+<!-- Issue-driven -->
+<details class="accordion">
+<summary>Issue-driven 開発 — 全ての作業を追跡可能にする</summary>
+<div class="accordion-body">
 
-      <div class="callout">
-        <strong>よくある誤解:</strong> Issue = バグ修正・変更だけ、ではない。<br>
-        <strong>正解:</strong> 新規機能開発もバグ修正もリファクタも改善も、<strong>「これから何かやる」全てにIssueを起票する</strong>。<br>
-        「変更の追跡」は結果論。本質は<strong>「やる理由と完了条件を先に言語化する」</strong>こと。
-      </div>
+<div class="callout">
+<strong>よくある誤解:</strong> Issue = バグ修正・変更だけ、ではない。<br>
+<strong>正解:</strong> 新規機能開発もバグ修正もリファクタも改善も、<strong>「これから何かやる」全てにIssueを起票する</strong>。<br>
+「変更の追跡」は結果論。本質は<strong>「やる理由と完了条件を先に言語化する」</strong>こと。
+</div>
 
-      <h4>Issueの対象 = やること全部</h4>
-      <table class="mini-table">
-        <thead><tr><th>種別</th><th>Issueタイトル例</th></tr></thead>
-        <tbody>
-          <tr><td>新機能開発</td><td>「注文書OCR自動化を実装する」</td></tr>
-          <tr><td>バグ修正</td><td>「ISBN13桁でバリデーションエラーになる」</td></tr>
-          <tr><td>改善</td><td>「OCR精度を60%→90%に上げる」</td></tr>
-          <tr><td>リファクタ</td><td>「kintone_utils.pyを共通モジュール化する」</td></tr>
-        </tbody>
-      </table>
+<h4>Issueの対象 = やること全部</h4>
+<table class="mini-table">
+<thead><tr><th>種別</th><th>Issueタイトル例</th></tr></thead>
+<tbody>
+<tr><td>新機能開発</td><td>「注文書OCR自動化を実装する」</td></tr>
+<tr><td>バグ修正</td><td>「ISBN13桁でバリデーションエラーになる」</td></tr>
+<tr><td>改善</td><td>「OCR精度を60%→90%に上げる」</td></tr>
+<tr><td>リファクタ</td><td>「kintone_utils.pyを共通モジュール化する」</td></tr>
+</tbody>
+</table>
 
-      <h4>フロー全体像</h4>
-      <div class="flow-diagram">
-        <span class="flow-step">Issue起票</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">ブランチ作成</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">Issue番号付きコミット</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">PR作成</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">レビュー</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">マージ</span>
-      </div>
+<h4>フロー全体像</h4>
+<div class="flow-diagram">
+<span class="flow-step">Issue起票</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">ブランチ作成</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">Issue番号付きコミット</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">PR作成</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">レビュー</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">マージ</span>
+</div>
 
-      <h4>Step 1: Issue起票（起点）</h4>
-      <p>Backlog（SYSDEVREQ）か GitHub Issues に起票する。<strong>「何を」だけでなく「なぜ」と「完了条件」を書く</strong>。</p>
-      <pre><code>タイトル: FAX注文書のOCR自動読取を実装する
+<h4>Step 1: Issue起票（起点）</h4>
+<p>Backlog（SYSDEVREQ）か GitHub Issues に起票する。<strong>「何を」だけでなく「なぜ」と「完了条件」を書く</strong>。</p>
+<pre><code>タイトル: FAX注文書のOCR自動読取を実装する
 
 ## 背景
 現在、FAX注文書を手動でkintoneに入力している。
@@ -1722,31 +1722,31 @@ FAX画像 → Gemini OCR → kintone自動登録
 - [ ] kintoneに自動登録される
 - [ ] エラー時にSlack通知が飛ぶ</code></pre>
 
-      <h4>Step 2: ブランチ作成</h4>
-      <pre><code>git checkout -b feat/SYSDEVREQ-1173_ocr-automation</code></pre>
-      <p>命名規約: <code>{種別}/SYSDEVREQ-{番号}_{簡潔な説明}</code></p>
-      <table class="mini-table">
-        <thead><tr><th>種別</th><th>使い方</th></tr></thead>
-        <tbody>
-          <tr><td><code>feat/</code></td><td>新機能</td></tr>
-          <tr><td><code>fix/</code></td><td>バグ修正</td></tr>
-          <tr><td><code>refactor/</code></td><td>リファクタリング</td></tr>
-        </tbody>
-      </table>
-      <p>ブランチ名にIssue番号を入れる理由: ブランチ名を見ただけで「何のための作業か」がわかる。<code>fix-something</code> みたいな曖昧な名前だと、3本溜まった時点で混乱する。</p>
+<h4>Step 2: ブランチ作成</h4>
+<pre><code>git checkout -b feat/SYSDEVREQ-1173_ocr-automation</code></pre>
+<p>命名規約: <code>{種別}/SYSDEVREQ-{番号}_{簡潔な説明}</code></p>
+<table class="mini-table">
+<thead><tr><th>種別</th><th>使い方</th></tr></thead>
+<tbody>
+<tr><td><code>feat/</code></td><td>新機能</td></tr>
+<tr><td><code>fix/</code></td><td>バグ修正</td></tr>
+<tr><td><code>refactor/</code></td><td>リファクタリング</td></tr>
+</tbody>
+</table>
+<p>ブランチ名にIssue番号を入れる理由: ブランチ名を見ただけで「何のための作業か」がわかる。<code>fix-something</code> みたいな曖昧な名前だと、3本溜まった時点で混乱する。</p>
 
-      <h4>Step 3: Issue番号付きコミット</h4>
-      <pre><code>git commit -m "feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装"
+<h4>Step 3: Issue番号付きコミット</h4>
+<pre><code>git commit -m "feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装"
 git commit -m "feat(SYSDEVREQ-1173): kintone自動登録を追加"
 git commit -m "fix(SYSDEVREQ-1173): ISBN13桁のバリデーション修正"</code></pre>
-      <p><code>git log --oneline</code> したときに、どのコミットがどのIssueに紐づくか一目でわかる:</p>
-      <pre><code>a3f2c1d feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装
+<p><code>git log --oneline</code> したときに、どのコミットがどのIssueに紐づくか一目でわかる:</p>
+<pre><code>a3f2c1d feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装
 b4e3d2c feat(SYSDEVREQ-1173): kintone自動登録を追加
 c5f4e3d fix(SYSDEVREQ-1173): ISBN13桁のバリデーション修正
 d6a5f4e feat(SYSDEVREQ-1082): stagingデータセットにカラム追加  ← 別Issue</code></pre>
 
-      <h4>Step 4: PR作成（Why を書く）</h4>
-      <pre><code>## Why（なぜこの変更が必要か）
+<h4>Step 4: PR作成（Why を書く）</h4>
+<pre><code>## Why（なぜこの変更が必要か）
 SYSDEVREQ-1173
 FAX注文書の手動入力に100分/日かかっている。
 Gemini OCR + kintone連携で自動化し、作業時間を90%削減する。
@@ -1761,156 +1761,156 @@ Gemini OCR + kintone連携で自動化し、作業時間を90%削減する。
 - [x] kintone登録成功
 - [x] エラー時Slack通知確認</code></pre>
 
-      <h4>「What だけのPR」vs「Why があるPR」</h4>
-      <table class="mini-table">
-        <thead><tr><th></th><th>What だけ</th><th>Why あり</th></tr></thead>
-        <tbody>
-          <tr><td><strong>3ヶ月後</strong></td><td>「OCR追加した」…で、なんで？</td><td>「100分/日の手動作業を自動化するため」→ なるほど</td></tr>
-          <tr><td><strong>判断の評価</strong></td><td>良かったのか悪かったのかわからない</td><td>「90%削減できたか？」で効果測定できる</td></tr>
-          <tr><td><strong>引き継ぎ</strong></td><td>新メンバーが経緯を追えない</td><td>Issueリンク辿れば全部わかる</td></tr>
-        </tbody>
-      </table>
+<h4>「What だけのPR」vs「Why があるPR」</h4>
+<table class="mini-table">
+<thead><tr><th></th><th>What だけ</th><th>Why あり</th></tr></thead>
+<tbody>
+<tr><td><strong>3ヶ月後</strong></td><td>「OCR追加した」…で、なんで？</td><td>「100分/日の手動作業を自動化するため」→ なるほど</td></tr>
+<tr><td><strong>判断の評価</strong></td><td>良かったのか悪かったのかわからない</td><td>「90%削減できたか？」で効果測定できる</td></tr>
+<tr><td><strong>引き継ぎ</strong></td><td>新メンバーが経緯を追えない</td><td>Issueリンク辿れば全部わかる</td></tr>
+</tbody>
+</table>
 
-      <h4>半年後の追跡フロー</h4>
-      <p>「なんでこのコード変えたんやっけ？」と思ったとき:</p>
-      <ol>
-        <li><code>git log</code> でコミットのIssue番号を見つける</li>
-        <li>Issueを開く → 背景・議論・完了条件が全部ある</li>
-        <li>PRを開く → Why・What・テスト結果がある</li>
-      </ol>
-      <p><strong>全部が追跡可能</strong>。これがIssue-driven開発の価値。</p>
+<h4>半年後の追跡フロー</h4>
+<p>「なんでこのコード変えたんやっけ？」と思ったとき:</p>
+<ol>
+<li><code>git log</code> でコミットのIssue番号を見つける</li>
+<li>Issueを開く → 背景・議論・完了条件が全部ある</li>
+<li>PRを開く → Why・What・テスト結果がある</li>
+</ol>
+<p><strong>全部が追跡可能</strong>。これがIssue-driven開発の価値。</p>
 
-      <div class="callout">
-        <strong>始め方:</strong> 今すぐ全部やる必要はない。まずは<strong>PR作成時に「Why」を1行書く</strong>ことから始めるだけで、3ヶ月後に効いてくる。
-      </div>
-    </div>
-  </details>
+<div class="callout">
+<strong>始め方:</strong> 今すぐ全部やる必要はない。まずは<strong>PR作成時に「Why」を1行書く</strong>ことから始めるだけで、3ヶ月後に効いてくる。
+</div>
+</div>
+</details>
 
-  <!-- GTD × Issue-driven -->
-  <details class="accordion">
-    <summary>GTD × Issue-driven — インボックス運用との両立</summary>
-    <div class="accordion-body">
+<!-- GTD × Issue-driven -->
+<details class="accordion">
+<summary>GTD × Issue-driven — インボックス運用との両立</summary>
+<div class="accordion-body">
 
-      <div class="callout">
-        <strong>よくある疑問:</strong> 「ざっくりタスクをInboxに放り込むGTD的運用は、Issue-drivenと相反するのでは？」<br>
-        <strong>答え:</strong> 全く相反しない。むしろ相性抜群。<strong>GTDは「頭を空にする段階」、Issue-drivenは「手を動かす段階」</strong>で、フェーズが違うだけ。
-      </div>
+<div class="callout">
+<strong>よくある疑問:</strong> 「ざっくりタスクをInboxに放り込むGTD的運用は、Issue-drivenと相反するのでは？」<br>
+<strong>答え:</strong> 全く相反しない。むしろ相性抜群。<strong>GTDは「頭を空にする段階」、Issue-drivenは「手を動かす段階」</strong>で、フェーズが違うだけ。
+</div>
 
-      <h4>2つのフレームワークの関係</h4>
-      <table class="mini-table">
-        <thead><tr><th>GTD（思考の整理）</th><th>Issue-driven（実行の追跡）</th></tr></thead>
-        <tbody>
-          <tr><td>「あ、これやらな」</td><td>「なぜやるか、完了条件は」</td></tr>
-          <tr><td>Inboxに放り込む</td><td>Issue起票 → ブランチ → PR</td></tr>
-          <tr><td>頭を空にする段階</td><td>手を動かす段階</td></tr>
-        </tbody>
-      </table>
-      <p><strong>Inboxは Issue の「前段階」</strong>。放り込むときはざっくりでいい。問題は<strong>ざっくりのまま着手すること</strong>。</p>
+<h4>2つのフレームワークの関係</h4>
+<table class="mini-table">
+<thead><tr><th>GTD（思考の整理）</th><th>Issue-driven（実行の追跡）</th></tr></thead>
+<tbody>
+<tr><td>「あ、これやらな」</td><td>「なぜやるか、完了条件は」</td></tr>
+<tr><td>Inboxに放り込む</td><td>Issue起票 → ブランチ → PR</td></tr>
+<tr><td>頭を空にする段階</td><td>手を動かす段階</td></tr>
+</tbody>
+</table>
+<p><strong>Inboxは Issue の「前段階」</strong>。放り込むときはざっくりでいい。問題は<strong>ざっくりのまま着手すること</strong>。</p>
 
-      <h4>GitHub Projects での運用フロー</h4>
-      <div class="flow-diagram">
-        <span class="flow-step">Inbox（ざっくり）</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">仕分け時にWhy追記</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">Next Action</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">ブランチ作成</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">In Progress</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">PR → Done</span>
-      </div>
+<h4>GitHub Projects での運用フロー</h4>
+<div class="flow-diagram">
+<span class="flow-step">Inbox（ざっくり）</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">仕分け時にWhy追記</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">Next Action</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">ブランチ作成</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">In Progress</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">PR → Done</span>
+</div>
 
-      <h4>看板カラムの役割</h4>
-      <table class="mini-table">
-        <thead><tr><th>カラム</th><th>役割</th><th>粒度</th><th>例</th></tr></thead>
-        <tbody>
-          <tr><td><strong>No Status / Inbox</strong></td><td>思いつきを捕獲</td><td>ざっくり1行でOK</td><td>「OCRやりたい」</td></tr>
-          <tr><td><strong>Next Action</strong></td><td>次やると決めたもの</td><td>Why + 完了条件を追記</td><td>SYSDEVREQ-1173</td></tr>
-          <tr><td><strong>In Progress</strong></td><td>今やってるもの</td><td>ブランチ切ってる</td><td>feat/SYSDEVREQ-1173_ocr</td></tr>
-          <tr><td><strong>Waiting</strong></td><td>誰かの返答待ち</td><td>誰を待ってるかメモ</td><td>「田端さんのAPI仕様確認待ち」</td></tr>
-          <tr><td><strong>Done</strong></td><td>完了</td><td>PRマージ済み</td><td></td></tr>
-        </tbody>
-      </table>
+<h4>看板カラムの役割</h4>
+<table class="mini-table">
+<thead><tr><th>カラム</th><th>役割</th><th>粒度</th><th>例</th></tr></thead>
+<tbody>
+<tr><td><strong>No Status / Inbox</strong></td><td>思いつきを捕獲</td><td>ざっくり1行でOK</td><td>「OCRやりたい」</td></tr>
+<tr><td><strong>Next Action</strong></td><td>次やると決めたもの</td><td>Why + 完了条件を追記</td><td>SYSDEVREQ-1173</td></tr>
+<tr><td><strong>In Progress</strong></td><td>今やってるもの</td><td>ブランチ切ってる</td><td>feat/SYSDEVREQ-1173_ocr</td></tr>
+<tr><td><strong>Waiting</strong></td><td>誰かの返答待ち</td><td>誰を待ってるかメモ</td><td>「田端さんのAPI仕様確認待ち」</td></tr>
+<tr><td><strong>Done</strong></td><td>完了</td><td>PRマージ済み</td><td></td></tr>
+</tbody>
+</table>
 
-      <div class="callout">
-        <strong>ポイント:</strong> Inbox → Next Action に移すタイミングで「Why + 完了条件」を2-3行追記する。<strong>Inboxにある間はざっくりのままでいい</strong>。
-      </div>
+<div class="callout">
+<strong>ポイント:</strong> Inbox → Next Action に移すタイミングで「Why + 完了条件」を2-3行追記する。<strong>Inboxにある間はざっくりのままでいい</strong>。
+</div>
 
-      <h4>Issue起票の2パターン</h4>
-      <p>全部のIssueに長文を書く必要はない。</p>
-      <table class="mini-table">
-        <thead><tr><th>パターン</th><th>書く量</th><th>例</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><strong>ざっくりInbox投入</strong><br>（まだ着手時期不明 / 調査系 / すぐ終わる）</td>
-            <td>タイトルだけでOK</td>
-            <td>「松本さんにアンケートのローデータ所在確認」<br>「3/17 MTGアジェンダ最終確認」</td>
-          </tr>
-          <tr>
-            <td><strong>着手時にWhy追記</strong><br>（コード変更あり / 複数日かかる / 引き継ぎ可能性）</td>
-            <td>Why + 完了条件を2-3行</td>
-            <td>Why: 手動入力100分/日を自動化<br>完了条件: OCR精度90%以上、kintone登録成功</td>
-          </tr>
-        </tbody>
-      </table>
+<h4>Issue起票の2パターン</h4>
+<p>全部のIssueに長文を書く必要はない。</p>
+<table class="mini-table">
+<thead><tr><th>パターン</th><th>書く量</th><th>例</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>ざっくりInbox投入</strong><br>（まだ着手時期不明 / 調査系 / すぐ終わる）</td>
+<td>タイトルだけでOK</td>
+<td>「松本さんにアンケートのローデータ所在確認」<br>「3/17 MTGアジェンダ最終確認」</td>
+</tr>
+<tr>
+<td><strong>着手時にWhy追記</strong><br>（コード変更あり / 複数日かかる / 引き継ぎ可能性）</td>
+<td>Why + 完了条件を2-3行</td>
+<td>Why: 手動入力100分/日を自動化<br>完了条件: OCR精度90%以上、kintone登録成功</td>
+</tr>
+</tbody>
+</table>
 
-      <h4>Issue化の判断基準</h4>
-      <table class="mini-table">
-        <thead><tr><th>タスクの性質</th><th>Why追記する？</th><th>理由</th></tr></thead>
-        <tbody>
-          <tr><td>コード変更を伴う</td><td><strong>する</strong></td><td>ブランチ・PR・コミットと紐づけるため</td></tr>
-          <tr><td>調査・検討だけ</td><td>しなくてOK</td><td>カードにメモで十分</td></tr>
-          <tr><td>5分で終わる</td><td>しなくてOK</td><td>オーバーヘッドの方が大きい</td></tr>
-          <tr><td>複数日かかる</td><td><strong>する</strong></td><td>中断・再開時に文脈を失わないため</td></tr>
-          <tr><td>他の人に引き継ぐ可能性</td><td><strong>する</strong></td><td>背景がないと引き継げない</td></tr>
-        </tbody>
-      </table>
+<h4>Issue化の判断基準</h4>
+<table class="mini-table">
+<thead><tr><th>タスクの性質</th><th>Why追記する？</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>コード変更を伴う</td><td><strong>する</strong></td><td>ブランチ・PR・コミットと紐づけるため</td></tr>
+<tr><td>調査・検討だけ</td><td>しなくてOK</td><td>カードにメモで十分</td></tr>
+<tr><td>5分で終わる</td><td>しなくてOK</td><td>オーバーヘッドの方が大きい</td></tr>
+<tr><td>複数日かかる</td><td><strong>する</strong></td><td>中断・再開時に文脈を失わないため</td></tr>
+<tr><td>他の人に引き継ぐ可能性</td><td><strong>する</strong></td><td>背景がないと引き継げない</td></tr>
+</tbody>
+</table>
 
-      <div class="callout">
-        <strong>まとめ:</strong> 今のGTD看板運用は正解。足すのは<strong>「Next Actionに移すときにWhy + 完了条件を2-3行追記」の1ステップだけ</strong>。それだけで半年後の追跡可能性が劇的に変わる。
-      </div>
-    </div>
-  </details>
+<div class="callout">
+<strong>まとめ:</strong> 今のGTD看板運用は正解。足すのは<strong>「Next Actionに移すときにWhy + 完了条件を2-3行追記」の1ステップだけ</strong>。それだけで半年後の追跡可能性が劇的に変わる。
+</div>
+</div>
+</details>
 
-  <!-- GitHub基本お作法 -->
-  <details class="accordion">
-    <summary>GitHub チーム開発の基本お作法 — 初心者が押さえるべき6つ</summary>
-    <div class="accordion-body">
+<!-- GitHub基本お作法 -->
+<details class="accordion">
+<summary>GitHub チーム開発の基本お作法 — 初心者が押さえるべき6つ</summary>
+<div class="accordion-body">
 
-      <h4>1. ブランチ運用 —「mainは常に動く状態」を守る</h4>
-      <pre><code>main（本番。壊したらあかん）
-  └── feat/SYSDEVREQ-1173_ocr（作業ブランチ。好きに壊してOK）
-        ↑ ここで作業して、完成したらPRでmainに合流</code></pre>
-      <table class="mini-table">
-        <thead><tr><th>ルール</th><th>理由</th></tr></thead>
-        <tbody>
-          <tr><td><strong>mainに直接コミットしない</strong></td><td>mainが壊れると全員止まる</td></tr>
-          <tr><td><strong>作業ブランチを切って作業</strong></td><td>失敗してもmainに影響なし</td></tr>
-          <tr><td><strong>PRでレビューしてからマージ</strong></td><td>品質の最終防衛線</td></tr>
-        </tbody>
-      </table>
-      <p>ブランチの一生:</p>
-      <div class="flow-diagram">
-        <span class="flow-step">作成</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">作業</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">push</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">PR作成</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">レビュー</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">マージ</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">ブランチ削除</span>
-      </div>
-      <p>ブランチは<strong>使い捨て</strong>。マージしたら消す。溜め込まない。</p>
+<h4>1. ブランチ運用 —「mainは常に動く状態」を守る</h4>
+<pre><code>main（本番。壊したらあかん）
+└── feat/SYSDEVREQ-1173_ocr（作業ブランチ。好きに壊してOK）
+↑ ここで作業して、完成したらPRでmainに合流</code></pre>
+<table class="mini-table">
+<thead><tr><th>ルール</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td><strong>mainに直接コミットしない</strong></td><td>mainが壊れると全員止まる</td></tr>
+<tr><td><strong>作業ブランチを切って作業</strong></td><td>失敗してもmainに影響なし</td></tr>
+<tr><td><strong>PRでレビューしてからマージ</strong></td><td>品質の最終防衛線</td></tr>
+</tbody>
+</table>
+<p>ブランチの一生:</p>
+<div class="flow-diagram">
+<span class="flow-step">作成</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">作業</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">push</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">PR作成</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">レビュー</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">マージ</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">ブランチ削除</span>
+</div>
+<p>ブランチは<strong>使い捨て</strong>。マージしたら消す。溜め込まない。</p>
 
-      <h4>2. コミットメッセージ — 未来の自分への手紙</h4>
-      <pre><code>❌ 悪い例
+<h4>2. コミットメッセージ — 未来の自分への手紙</h4>
+<pre><code>❌ 悪い例
 git commit -m "修正"
 git commit -m "update"
 git commit -m "fix"
@@ -1918,59 +1918,59 @@ git commit -m "fix"
 ✅ 良い例
 git commit -m "feat(SYSDEVREQ-1173): Gemini OCRで注文書読取を実装"
 git commit -m "fix: ISBN13桁のバリデーションでエラーになる問題を修正"</code></pre>
-      <p>フォーマット: <code>{種別}: {何をしたか}</code></p>
-      <table class="mini-table">
-        <thead><tr><th>種別</th><th>使い方</th></tr></thead>
-        <tbody>
-          <tr><td><code>feat:</code></td><td>新機能追加</td></tr>
-          <tr><td><code>fix:</code></td><td>バグ修正</td></tr>
-          <tr><td><code>refactor:</code></td><td>動作は変えずにコード整理</td></tr>
-          <tr><td><code>docs:</code></td><td>ドキュメントだけ変更</td></tr>
-          <tr><td><code>chore:</code></td><td>設定変更・雑務</td></tr>
-        </tbody>
-      </table>
+<p>フォーマット: <code>{種別}: {何をしたか}</code></p>
+<table class="mini-table">
+<thead><tr><th>種別</th><th>使い方</th></tr></thead>
+<tbody>
+<tr><td><code>feat:</code></td><td>新機能追加</td></tr>
+<tr><td><code>fix:</code></td><td>バグ修正</td></tr>
+<tr><td><code>refactor:</code></td><td>動作は変えずにコード整理</td></tr>
+<tr><td><code>docs:</code></td><td>ドキュメントだけ変更</td></tr>
+<tr><td><code>chore:</code></td><td>設定変更・雑務</td></tr>
+</tbody>
+</table>
 
-      <h4>3. Pull Request (PR) — コードの「提案書」</h4>
-      <p>PRは「このコードをmainに入れてもいいですか？」という<strong>提案</strong>。</p>
-      <div class="flow-diagram">
-        <span class="flow-step">ブランチをpush</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">PR作成</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">Why + What記入</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">レビュー</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">マージ</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">ブランチ削除</span>
-      </div>
-      <p>今は1人開発でも<strong>PRを作る習慣</strong>だけはつけておく。チームメンバーが増えた時にスムーズに移行できる。</p>
+<h4>3. Pull Request (PR) — コードの「提案書」</h4>
+<p>PRは「このコードをmainに入れてもいいですか？」という<strong>提案</strong>。</p>
+<div class="flow-diagram">
+<span class="flow-step">ブランチをpush</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">PR作成</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">Why + What記入</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">レビュー</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">マージ</span>
+<span class="flow-arrow">→</span>
+<span class="flow-step">ブランチ削除</span>
+</div>
+<p>今は1人開発でも<strong>PRを作る習慣</strong>だけはつけておく。チームメンバーが増えた時にスムーズに移行できる。</p>
 
-      <h4>4. .gitignore — 「何をGitに入れないか」</h4>
-      <pre><code># 絶対にGitに入れたらあかんもの
+<h4>4. .gitignore — 「何をGitに入れないか」</h4>
+<pre><code># 絶対にGitに入れたらあかんもの
 .credentials/          # 認証ファイル
 .env                   # 環境変数（実値）
 *.pyc                  # コンパイル済みファイル
 __pycache__/           # Pythonキャッシュ
 node_modules/          # npmパッケージ
 .venv/                 # Python仮想環境</code></pre>
-      <div class="callout">
-        <strong>鉄則:</strong> 一度Gitに入ったシークレットは、削除しても<strong>履歴に残る</strong>。入れる前に防ぐのが鉄則。
-      </div>
+<div class="callout">
+<strong>鉄則:</strong> 一度Gitに入ったシークレットは、削除しても<strong>履歴に残る</strong>。入れる前に防ぐのが鉄則。
+</div>
 
-      <h4>5. 心構え 3つ</h4>
-      <table class="mini-table">
-        <thead><tr><th>#</th><th>心構え</th><th>具体的には</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td><strong>小さくコミット、小さくPR</strong></td><td>1000行の巨大PRより、100行×10本のPR。レビューしやすい＝事故が減る</td></tr>
-          <tr><td>2</td><td><strong>迷ったらコミットしておく</strong></td><td><code>git commit</code> は「セーブポイント」。こまめにセーブしておけば壊しても戻れる</td></tr>
-          <tr><td>3</td><td><strong>壊しても戻せる</strong></td><td>パニックにならず、<code>git stash</code> か <code>git checkout</code> で安全な状態に戻す</td></tr>
-        </tbody>
-      </table>
+<h4>5. 心構え 3つ</h4>
+<table class="mini-table">
+<thead><tr><th>#</th><th>心構え</th><th>具体的には</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>小さくコミット、小さくPR</strong></td><td>1000行の巨大PRより、100行×10本のPR。レビューしやすい＝事故が減る</td></tr>
+<tr><td>2</td><td><strong>迷ったらコミットしておく</strong></td><td><code>git commit</code> は「セーブポイント」。こまめにセーブしておけば壊しても戻れる</td></tr>
+<tr><td>3</td><td><strong>壊しても戻せる</strong></td><td>パニックにならず、<code>git stash</code> か <code>git checkout</code> で安全な状態に戻す</td></tr>
+</tbody>
+</table>
 
-      <h4>6. 困ったときの緊急コマンド</h4>
-      <pre><code># 変更を一時退避（作業中だけどブランチ切り替えたい）
+<h4>6. 困ったときの緊急コマンド</h4>
+<pre><code># 変更を一時退避（作業中だけどブランチ切り替えたい）
 git stash
 git stash pop          # 戻す
 
@@ -1982,59 +1982,59 @@ git checkout -- ファイル名
 
 # 今の状態を確認（迷ったらまずこれ）
 git status</code></pre>
-    </div>
-  </details>
+</div>
+</details>
 
-  <!-- 環境再現性 -->
-  <details class="accordion">
-    <summary>環境再現性 — 「自分のPCでしか動かない」を防ぐ</summary>
-    <div class="accordion-body">
+<!-- 環境再現性 -->
+<details class="accordion">
+<summary>環境再現性 — 「自分のPCでしか動かない」を防ぐ</summary>
+<div class="accordion-body">
 
-      <h4>問題</h4>
-      <p>「自分のPCでは動くけど、他の環境では動かない」。原因は<strong>「何が必要か」が明示されていない</strong>こと。</p>
+<h4>問題</h4>
+<p>「自分のPCでは動くけど、他の環境では動かない」。原因は<strong>「何が必要か」が明示されていない</strong>こと。</p>
 
-      <h4>解決: .env.example</h4>
-      <p>値は空。<strong>「何が必要か」だけ示す</strong>ファイル。</p>
-      <pre><code># .env.example（実際の値は入れない）
+<h4>解決: .env.example</h4>
+<p>値は空。<strong>「何が必要か」だけ示す</strong>ファイル。</p>
+<pre><code># .env.example（実際の値は入れない）
 GEMINI_API_KEY=
 KINTONE_SUBDOMAIN=
 KINTONE_API_TOKEN=</code></pre>
-      <p>新しい環境でのセットアップ:</p>
-      <ol>
-        <li><code>.env.example</code> をコピーして <code>.env</code> にリネーム</li>
-        <li>値を埋める</li>
-        <li>動く</li>
-      </ol>
+<p>新しい環境でのセットアップ:</p>
+<ol>
+<li><code>.env.example</code> をコピーして <code>.env</code> にリネーム</li>
+<li>値を埋める</li>
+<li>動く</li>
+</ol>
 
-      <h4>3段階の再現性レベル</h4>
-      <table class="mini-table">
-        <thead><tr><th>レベル</th><th>やること</th><th>効果</th></tr></thead>
-        <tbody>
-          <tr><td>最低限</td><td><code>requirements.txt</code> をコミット</td><td>パッケージの再現</td></tr>
-          <tr><td>中級</td><td><code>.env.example</code> を置く（値は空）</td><td>「何が必要か」がわかる</td></tr>
-          <tr><td>上級</td><td>Docker化</td><td>Cloud Runデプロイ時に自然と達成</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </details>
+<h4>3段階の再現性レベル</h4>
+<table class="mini-table">
+<thead><tr><th>レベル</th><th>やること</th><th>効果</th></tr></thead>
+<tbody>
+<tr><td>最低限</td><td><code>requirements.txt</code> をコミット</td><td>パッケージの再現</td></tr>
+<tr><td>中級</td><td><code>.env.example</code> を置く（値は空）</td><td>「何が必要か」がわかる</td></tr>
+<tr><td>上級</td><td>Docker化</td><td>Cloud Runデプロイ時に自然と達成</td></tr>
+</tbody>
+</table>
+</div>
+</details>
 
-  <!-- Contract Test -->
-  <details class="accordion">
-    <summary>Contract Test — 外部APIの仕様変更事故を防ぐ</summary>
-    <div class="accordion-body">
+<!-- Contract Test -->
+<details class="accordion">
+<summary>Contract Test — 外部APIの仕様変更事故を防ぐ</summary>
+<div class="accordion-body">
 
-      <h4>問題</h4>
-      <p>外部APIの仕様が変わって、ある日突然動かなくなる。「何が期待値だったか」がどこにも書いてない → 原因調査に時間がかかる。</p>
+<h4>問題</h4>
+<p>外部APIの仕様が変わって、ある日突然動かなくなる。「何が期待値だったか」がどこにも書いてない → 原因調査に時間がかかる。</p>
 
-      <h4>具体例: kintone 注文書アプリ</h4>
-      <ul>
-        <li>ある日、管理者がフィールド名を「書名」から「タイトル」に変更</li>
-        <li>スクリプトが突然エラー</li>
-        <li>「何が契約（期待値）だったか」がどこにも書いてない</li>
-      </ul>
+<h4>具体例: kintone 注文書アプリ</h4>
+<ul>
+<li>ある日、管理者がフィールド名を「書名」から「タイトル」に変更</li>
+<li>スクリプトが突然エラー</li>
+<li>「何が契約（期待値）だったか」がどこにも書いてない</li>
+</ul>
 
-      <h4>解決: docs/contracts/ に契約を明文化</h4>
-      <pre><code># docs/contracts/kintone-order.md
+<h4>解決: docs/contracts/ に契約を明文化</h4>
+<pre><code># docs/contracts/kintone-order.md
 
 ## アプリID: 78（注文書管理）
 
@@ -2047,17 +2047,17 @@ KINTONE_API_TOKEN=</code></pre>
 ## 変更履歴
 - 2026-03-14: 初版作成</code></pre>
 
-      <h4>Contract Test があると</h4>
-      <table class="mini-table">
-        <thead><tr><th>場面</th><th>なし</th><th>あり</th></tr></thead>
-        <tbody>
-          <tr><td>API変更時</td><td>何が変わったか調査に時間</td><td>Contract と突き合わせて即座に特定</td></tr>
-          <tr><td>新メンバー参加</td><td>依存関係が不明</td><td>「このフィールドに依存」が一目瞭然</td></tr>
-          <tr><td>障害調査</td><td>原因の切り分けに時間</td><td>契約違反かどうかで即判定</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </details>
+<h4>Contract Test があると</h4>
+<table class="mini-table">
+<thead><tr><th>場面</th><th>なし</th><th>あり</th></tr></thead>
+<tbody>
+<tr><td>API変更時</td><td>何が変わったか調査に時間</td><td>Contract と突き合わせて即座に特定</td></tr>
+<tr><td>新メンバー参加</td><td>依存関係が不明</td><td>「このフィールドに依存」が一目瞭然</td></tr>
+<tr><td>障害調査</td><td>原因の切り分けに時間</td><td>契約違反かどうかで即判定</td></tr>
+</tbody>
+</table>
+</div>
+</details>
 
 </div>
 
