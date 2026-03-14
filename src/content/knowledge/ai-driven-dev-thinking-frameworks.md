@@ -12,307 +12,1090 @@ audience: self
 source: "Claude Code session 2026-03-14"
 ---
 
-## なぜこのフレームワークが必要か
-
-今後の開発は SQL分析 → API連携・エージェント開発・自動化と多様化する。
-個別プロジェクト用のスキルを量産するのではなく、**どんな開発でも品質と効率を高める汎用的な思考プロセス・マインド・実践ポイント**を身につける。
-
-### 4つの柱
-
-1. **「判断の確信度」がボトルネック** --- ツールではなく思考の質が生産性を決める
-2. **失敗の8割は文脈情報の欠落** --- コンテキストエンジニアリングが最重要スキル
-3. **検証なき実装は負債** --- 作る前に「何をテストするか」を決める
-4. **思考の形跡を残す** --- コードだけでなく「なぜそう作ったか」をドキュメントに残す
-
----
-
-## 1. 要件定義フェーズの汎用原則
-
-### 1-1. 三軸フィルター（Desirability x Feasibility x Viability）
-
-あらゆるプロジェクトの要件を、この3軸で検証する。1軸でも欠けたまま進むと手戻りが発生する。
-
-| 軸 | 問い | 例（API連携） | 例（SQLマート） |
-|----|------|-------------|---------------|
-| **Desirability**（需要） | 誰が、何のために使うか？ | 広告担当者が入稿作業の時短のため | 営業がConnected Sheetsで日次KPI確認 |
-| **Feasibility**（実現性） | 技術的に可能か？制約は？ | APIレート制限、認証要件、データ量 | テーブル容量、JOIN複雑度、更新頻度 |
-| **Viability**（持続性） | 運用コストは見合うか？ | API課金、トークン更新、障害対応 | BQスキャンコスト、スケジュールクエリ維持 |
-
-**実践ポイント**: 要件定義の最初に「D x F x V で見落としはないか？」と自問する。
-
-### 1-2. プレモーテム（事前検死）
-
-「このプロジェクトが失敗するとしたら、何が原因か？」を**着手前に**考える。
-研究によると、プレモーテムにより失敗特定能力が30%向上する。
-
-**5W フレームワーク**:
-
-| W | 問い | 考え方 |
-|---|------|--------|
-| **Who** fails | 誰が困るか | ユーザー？運用者？データ消費者？ |
-| **What** breaks | 何が壊れるか | データ欠損？認証切れ？性能劣化？ |
-| **When** noticed | いつ気づくか | 即座？翌日？月末の集計時？ |
-| **Where** impact | 影響範囲は | このテーブルだけ？下流全体？ |
-| **Why** happened | 根本原因は | 設計ミス？外部API仕様変更？運用手順の漏れ？ |
-
-**実践ポイント**: 3つ以上の失敗シナリオを挙げられないなら、要件の理解が浅い。
-
-### 1-3. 受入条件ファースト（12項目チェックリスト）
-
-「完成の定義」を最初に決める。何を作るかではなく、**何ができたら完成か**を先に定義する。
-
-1. ゴールが1文で説明できるか
-2. 入力データ/ソースが特定されているか
-3. 出力の形式・格納先が決まっているか
-4. 正常系の動作が定義されているか
-5. 異常系（エラー時の動作）が定義されているか
-6. 性能要件があるか（処理時間、データ量上限）
-7. セキュリティ要件があるか（認証、権限、データ保護）
-8. 運用要件があるか（更新頻度、監視、アラート）
-9. テスト方法が決まっているか
-10. 依存関係（他PJ、他テーブル、外部API）が明確か
-11. 完了のサインオフ方法が決まっているか
-12. ロールバック方法が決まっているか
-
-**実践ポイント**: 全12項目を埋める必要はない。「この項目は該当しない」と意識的に判断することが重要。
-
----
-
-## 2. 設計フェーズの汎用原則
-
-### 2-1. 代替案の比較（最低2案）
-
-1案だけで進めない。**最低2つの選択肢を並べて比較**してから決定する。
-
-| 軸 | 内容 |
-|----|------|
-| 実装コスト | 何時間/何日かかるか |
-| 運用コスト | 月額いくらか。人的コストは |
-| 複雑度 | メンテナンスしやすいか |
-| 拡張性 | 将来の変更に耐えるか |
-| リスク | 失敗した場合の影響は |
-
-**実践ポイント**: 「これしかない」と思ったときこそ、2案目を考える。
-
-### 2-2. ADR（Architecture Decision Record）
-
-設計判断を記録する。「なぜこの設計にしたか」を未来の自分に説明できるようにする。
-
-```
-## ADR-{番号}: {タイトル}
-### 結論
-- {1-2文で決定事項を明記}
-### 判断理由
-1. {理由1}: {具体的な根拠}
-2. {理由2}: {具体的な根拠}
-### トレードオフ（受容するリスク）
-- {受け入れるデメリット}: {なぜ許容するか}
-```
-
-**書くべきタイミング**: 迷ったとき、トレードオフがあるとき、後で聞かれそうなとき。
-**書かなくていいとき**: 明らかに1択、影響範囲が小さいとき。
-
-### 2-3. コスト意識
-
-設計時にコストを見積もる。正確な見積もりは不要。**桁が合っているか**を把握するだけで十分。
-
-- BQ: `dry_run` でスキャンGB → $6.25/TB 換算
-- API: レート制限 x データ量 → 月間呼出し回数 → 課金
-- Cloud Run: 起動時間 x メモリ → 月額
-- 人的コスト: 運用工数 x 時間単価
-
-### 2-4. ガードレール設計（4層）
-
-| 層 | 内容 | 例 |
-|----|------|-----|
-| L1: 行動制限 | 許可する操作のホワイトリスト | 「読み取りのみ」 |
-| L2: 出力検証 | 結果の妥当性チェック | 「行数が前回比 +-50%以内」 |
-| L3: 予算制御 | コスト・回数の上限 | 「月額$100以下」 |
-| L4: 人間承認 | 重要操作は人間が最終判断 | 「本番広告配信」 |
-
-**実践ポイント**: 最初からL4で始め、信頼度に応じてL1-L3に自動化を移していく。
-
----
-
-## 3. テスト・検証フェーズの汎用原則
-
-### 3-1. テストファースト思考
-
-「何を作るか」を考えた直後に「何をテストするか」を考える。
-
-**テストピラミッド**: ユニットテストを厚くし、E2Eは最も重要なハッピーパスだけに絞る。
-
-### 3-2. DQ 7次元フレームワーク
-
-データ品質を7つの次元で検証する。どんなデータにも適用できる。
-
-| 次元 | 問い | 検証方法 |
-|------|------|---------|
-| **Uniqueness（一意性）** | 重複はないか？ | 主キーの重複チェック |
-| **Completeness（完全性）** | 欠損はないか？ | NULL率チェック |
-| **Validity（妥当性）** | 値は正しい範囲か？ | 値域・フォーマットチェック |
-| **Accuracy（正確性）** | ソースと一致するか？ | ソースデータとの突合 |
-| **Integrity（整合性）** | 参照先は存在するか？ | 外部キー参照チェック |
-| **Consistency（一貫性）** | 他データと矛盾しないか？ | クロスチェック |
-| **Timeliness（適時性）** | データは新鮮か？ | 最終更新日時チェック |
-
-**実践ポイント**: **Uniqueness + Completeness + Validity の3つは必須**。残りは重要度に応じて。
-
-### 3-3. セルフレビュー 8ステップ
-
-1. **意図の言語化**: この変更の「なぜ」を1文で説明できるか？
-2. **粒度の確認**: 期待する粒度は正しいか？
-3. **目視確認**: サンプルデータを実際に目で見たか？
-4. **ソース突合**: 元データとの突合は行ったか？
-5. **極端値チェック**: MIN/MAX/AVGは妥当か？
-6. **NULL理解**: NULLの発生パターンを理解しているか？
-7. **AI出力の意図確認**: AIが生成したコードの意図を説明できるか？
-8. **一晩寝かせる**: 急ぎでなければ翌日もう一度見る価値があるか？
-
-**実践ポイント**: 最低限 **1（意図）+ 3（目視）+ 7（AI意図確認）** の3つは毎回やる。
-
-### 3-4. 回帰テスト思考
-
-- 変更前後で出力結果が変わっていないか
-- 下流の依存先に影響はないか
-- 前回の数値との差異は説明可能か
-
----
-
-## 4. 横断的なマインドセット
-
-### 4-1. コンテキストエンジニアリング
-
-**「失敗の8割は文脈情報の欠落」**。AIに渡す情報の質が成果物の質を決める。
-
-| 要素 | 実践 |
-|------|------|
-| System Prompt | CLAUDE.md / Rules でプロジェクト文脈を常時供給 |
-| User Prompt | 「何を」「なぜ」「どの程度」を明示 |
-| State / History | `/compact` で要約、`/clear` でリセット |
-| Long-term Memory | MEMORY.md で過去の教訓を蓄積 |
-| Retrieved Info | スキーマ確認ファースト、APIドキュメント事前取得 |
-| Tools / Output | Agentの役割分担、出力フォーマット統一 |
-
-**実践ポイント**: AIの出力が期待と違うとき、「プロンプトが悪い」のではなく「コンテキストが不足している」と考える。
-
-### 4-2. 2回失敗ルール
-
-同じアプローチで2回失敗したら、**別のアプローチに切り替える**。3回目の同じ試行は時間の浪費。
-
-### 4-3. 冪等性の意識
-
-「同じ操作を2回実行しても結果が変わらない」ように設計する。
-- SQL: `CREATE OR REPLACE`
-- API: 冪等性キー
-- スクリプト: 途中失敗でも再実行可能
-
-### 4-4. Sagaパターン（補償トランザクション）
-
-複数ステップの処理で、途中失敗時に逆順で巻き戻す設計。
-
-**適用条件**: (1) 複数の外部システムにまたがる (2) 途中失敗時に一貫性が崩れる (3) 元に戻す操作が可能
-
-### 4-5. 最小権限の原則
-
-「全部OKにして後から絞る」ではなく「全部NGから必要なものだけ開ける」。
-
----
-
-## 5. チーム開発プラクティス（ad-conversion-kit に学ぶ）
-
-### リファレンス: ad-conversion-kit のドキュメント構造
-
-```
-docs/
-├── specs/     仕様書（WHAT: 何を作るか）
-├── plan/      計画（WHY: なぜそう作るか）--- ADR含む
-├── runbooks/  運用（HOW: 障害時どうするか）
-├── tests/     テスト（VERIFY: 正しく動くか）
-└── setup/     セットアップ（ONBOARD: どう始めるか）
-```
-
-**優れているポイント**:
-- 仕様書がコードより先に書かれている（Spec-driven）
-- ADRが「結論 + 判断理由 + トレードオフ」の3点セット
-- テストケースが「UT-LP-001」のようにID付き管理
-- 仕様書間の参照で情報が追跡可能
-
-### 5-1. 仕様書ファースト
-
-コードを書く前に仕様書を書く。標準セクション:
-1. 目的、2. スコープ/非スコープ、3. 完了定義、4. アーキテクチャ、5. 実装仕様、6. 冪等性・リトライ・ログ、7. セキュリティ、8. 検証、9. 受入条件、10. テストケース参照
-
-**最低限**: 1（目的）+ 2（スコープ）+ 9（受入条件）で成立。
-
-### 5-2. テストケースのドキュメント化
-
-Given/When/Then 形式 + テストID で管理。
-
-```
-- UT-{モジュール}-{番号}: {テスト名}
-  - Given: {前提条件}
-  - When: {操作}
-  - Then: {期待結果}
-```
-
-### 5-3. プロジェクト骨格テンプレート（キックオフ直後30分）
-
-```
-{project-name}/
-├── README.md              # 概要（最初は3行でOK）
-├── CLAUDE.md              # Claude Code用プロジェクト設定
-├── docs/specs/            # 仕様書
-├── docs/plan/             # 実装計画 + ADR
-├── docs/tests/            # テスト仕様
-├── scripts/               # 自動化スクリプト
-├── .env.example           # 必要な環境変数の一覧（値は空）
-├── requirements.txt
-├── Makefile               # タスクランナー
-├── .github/pull_request_template.md
-└── .gitignore
-```
-
-### 5-4. Issue-driven 開発
-
-```
-Issue起票 → ブランチ（feat/SYSDEVREQ-1234_xxx）→ コミットにIssue番号 → PR → マージ
-```
-
-半年後に「なんでこうしたんやっけ？」→ Issue番号で全部追跡できる。
-
-### 5-5. PRテンプレートに「Why」を強制
-
-「What」だけのPRは3ヶ月後にゴミ。「Why」があるPRは資産。
-
-### 5-6. 環境再現性
-
-| レベル | やること |
-|-------|---------|
-| 最低限 | `requirements.txt` をコミット |
-| 中級 | `.env.example` を置く（値は空） |
-| 上級 | Docker化 |
-
-### 5-7. Changelog（非エンジニア向け）
-
-git log の翻訳版。技術変更をビジネスインパクトの言葉で書く。
-
-### 5-8. Contract Test（外部API契約の明文化）
-
-外部APIの「相手から届くデータの形」と「こちらが送るデータの形」を明文化。API仕様変更で事故が起きるのは、契約が明文化されていないから。
-
-### 5-9. Makefile / タスクランナー
-
-`make run` の1コマンドに集約。「READMEを読んで手順通りにやる」は人間もAIも間違える。コマンドは間違えない。
-
----
-
-## まとめ: 実践の優先順位
-
-| 優先度 | 実践項目 | 理由 |
-|-------|---------|------|
-| **毎回やる** | 三軸フィルター、受入条件3項目（目的・スコープ・受入条件） | 手戻りの8割を防ぐ |
-| **毎回やる** | セルフレビュー3点（意図・目視・AI意図確認） | 品質の最終防衛線 |
-| **迷ったら** | ADR、代替案比較 | 判断の記録 |
-| **新規PJ時** | プロジェクト骨格テンプレート、Issue-driven | 追跡可能性の確保 |
-| **外部API時** | Contract Test、ガードレール設計 | 障害調査の高速化 |
+<style>
+  :root {
+    --navy: #1B2A4A;
+    --navy-light: #2C4066;
+    --gray-bg: #F7F8FA;
+    --gray-card: #FFFFFF;
+    --gray-border: #E2E5EB;
+    --gray-text: #5A6578;
+    --orange: #E87722;
+    --orange-light: #FFF4EC;
+    --text-primary: #1B2A4A;
+    --text-secondary: #5A6578;
+  }
+
+  .mckinsey-article {
+    font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.7;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ===== Hero Banner ===== */
+  .hero-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: #fff;
+    padding: 48px 40px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(232,119,34,0.08);
+    border-radius: 50%;
+  }
+  .hero-banner h1 {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .hero-subtitle {
+    font-size: 1.05em;
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+    max-width: 680px;
+  }
+
+  /* ===== Pillar Cards ===== */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 32px 0;
+  }
+  @media (max-width: 768px) {
+    .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .pillar-card {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 24px 20px;
+    text-align: center;
+    transition: box-shadow 0.2s;
+  }
+  .pillar-card:hover {
+    box-shadow: 0 4px 20px rgba(27,42,74,0.08);
+  }
+  .pillar-icon {
+    font-size: 2em;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .pillar-card h4 {
+    font-size: 0.85em;
+    color: var(--navy);
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+  .pillar-card p {
+    font-size: 0.78em;
+    color: var(--gray-text);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ===== Section Header ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--navy);
+  }
+  .section-number {
+    background: var(--navy);
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1em;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35em;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0;
+  }
+
+  /* ===== Insight Box (So What?) ===== */
+  .insight-box {
+    background: var(--orange-light);
+    border-left: 4px solid var(--orange);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .insight-box .insight-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .insight-box p {
+    margin: 0;
+    font-size: 0.92em;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ===== Infographic: 3-Axis Venn ===== */
+  .axis-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  @media (max-width: 768px) {
+    .axis-cards { grid-template-columns: 1fr; }
+  }
+  .axis-card {
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    border: 2px solid;
+  }
+  .axis-card.desirability {
+    background: #F0F4FF;
+    border-color: #4A72C4;
+  }
+  .axis-card.feasibility {
+    background: #F0FAF0;
+    border-color: #4A9E6F;
+  }
+  .axis-card.viability {
+    background: #FFF8F0;
+    border-color: var(--orange);
+  }
+  .axis-card .axis-icon { font-size: 1.8em; margin-bottom: 8px; display: block; }
+  .axis-card h4 {
+    font-size: 0.95em;
+    margin: 0 0 4px 0;
+    font-weight: 700;
+  }
+  .axis-card .axis-subtitle {
+    font-size: 0.78em;
+    color: var(--gray-text);
+    margin: 0 0 12px 0;
+  }
+  .axis-card .axis-question {
+    font-size: 0.88em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+  }
+  .axis-examples {
+    font-size: 0.78em;
+    color: var(--gray-text);
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .axis-examples li { padding: 2px 0; }
+  .axis-examples li::before { content: ''; margin-right: 6px; }
+
+  /* ===== 5W Grid ===== */
+  .five-w-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+  @media (max-width: 768px) {
+    .five-w-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .five-w-item {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .five-w-item .w-letter {
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .five-w-item .w-label {
+    font-size: 0.72em;
+    color: var(--orange);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .five-w-item .w-question {
+    font-size: 0.82em;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .five-w-item .w-hint {
+    font-size: 0.72em;
+    color: var(--gray-text);
+  }
+
+  /* ===== Checklist ===== */
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+  @media (max-width: 768px) {
+    .checklist-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .checklist-item {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.82em;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .checklist-num {
+    background: var(--navy);
+    color: #fff;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ===== Comparison Table ===== */
+  .comparison-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 24px 0;
+    font-size: 0.88em;
+    border: 1px solid var(--gray-border);
+  }
+  .comparison-table th {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .comparison-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-border);
+    background: var(--gray-card);
+  }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  .comparison-table tr:nth-child(even) td { background: var(--gray-bg); }
+
+  /* ===== Layer Diagram ===== */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .layer-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--gray-border);
+    background: var(--gray-card);
+  }
+  .layer-item:first-child { border-radius: 10px 10px 0 0; }
+  .layer-item:last-child { border-radius: 0 0 10px 10px; }
+  .layer-item + .layer-item { border-top: none; }
+  .layer-badge {
+    background: var(--navy);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.78em;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .layer-item:last-child .layer-badge {
+    background: var(--orange);
+  }
+  .layer-content h5 {
+    font-size: 0.88em;
+    margin: 0 0 2px 0;
+    color: var(--text-primary);
+  }
+  .layer-content p {
+    font-size: 0.78em;
+    color: var(--gray-text);
+    margin: 0;
+  }
+
+  /* ===== DQ Radar-like Grid ===== */
+  .dq-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+  @media (max-width: 768px) {
+    .dq-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .dq-item {
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1px solid var(--gray-border);
+    background: var(--gray-card);
+  }
+  .dq-item.required {
+    border-color: var(--navy);
+    background: #F0F3F8;
+  }
+  .dq-item .dq-icon { font-size: 1.4em; margin-bottom: 6px; display: block; }
+  .dq-item h5 {
+    font-size: 0.82em;
+    margin: 0 0 2px 0;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .dq-item .dq-en {
+    font-size: 0.68em;
+    color: var(--gray-text);
+    margin: 0 0 8px 0;
+  }
+  .dq-item .dq-method {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+  }
+  .dq-item .dq-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: #fff;
+    font-size: 0.65em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  /* ===== Steps ===== */
+  .steps-row {
+    display: flex;
+    gap: 0;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .step-item {
+    flex: 1;
+    min-width: 100px;
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+  .step-item:first-child { border-radius: 10px 0 0 10px; }
+  .step-item:last-child { border-radius: 0 10px 10px 0; }
+  .step-item + .step-item { border-left: none; }
+  .step-item.must {
+    background: var(--orange-light);
+    border-color: var(--orange);
+  }
+  .step-num {
+    font-size: 1.4em;
+    font-weight: 800;
+    color: var(--navy);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .step-item.must .step-num { color: var(--orange); }
+  .step-item h5 {
+    font-size: 0.78em;
+    margin: 0 0 4px 0;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .step-item p {
+    font-size: 0.7em;
+    color: var(--gray-text);
+    margin: 0;
+  }
+
+  /* ===== Process Flow ===== */
+  .process-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .process-step {
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.82em;
+    font-weight: 600;
+    text-align: center;
+  }
+  .process-arrow {
+    color: var(--gray-text);
+    font-size: 1.2em;
+    padding: 0 8px;
+  }
+
+  /* ===== Tree Diagram ===== */
+  .tree-container {
+    background: var(--gray-bg);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 24px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    color: var(--navy);
+    line-height: 1.6;
+  }
+
+  /* ===== Priority Matrix ===== */
+  .priority-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 24px 0;
+    font-size: 0.85em;
+    border: 1px solid var(--gray-border);
+  }
+  .priority-table th {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .priority-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gray-border);
+    background: var(--gray-card);
+  }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .priority-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 600;
+  }
+  .priority-badge.always { background: var(--orange); color: #fff; }
+  .priority-badge.situational { background: var(--navy); color: #fff; }
+  .priority-badge.optional { background: var(--gray-border); color: var(--text-primary); }
+
+  /* ===== Sub Section ===== */
+  .sub-section {
+    margin: 28px 0;
+  }
+  .sub-section h3 {
+    font-size: 1.05em;
+    color: var(--navy);
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    padding-left: 12px;
+    border-left: 4px solid var(--navy);
+  }
+  .sub-section p {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin: 8px 0;
+  }
+
+  /* ===== ADR Template ===== */
+  .adr-template {
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .adr-template h5 {
+    color: var(--navy);
+    font-size: 0.85em;
+    margin: 0 0 4px 0;
+  }
+  .adr-template .adr-field {
+    color: var(--gray-text);
+    font-size: 0.82em;
+    margin: 0 0 12px 0;
+    padding-left: 12px;
+    border-left: 2px solid var(--gray-border);
+  }
+
+  /* ===== Specs Template ===== */
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  @media (max-width: 768px) {
+    .specs-grid { grid-template-columns: 1fr; }
+  }
+  .specs-item {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .specs-item.must {
+    border-color: var(--orange);
+    background: var(--orange-light);
+  }
+  .specs-num {
+    background: var(--navy);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .specs-item.must .specs-num { background: var(--orange); }
+  .specs-text {
+    font-size: 0.82em;
+    color: var(--text-primary);
+  }
+</style>
+
+<div class="mckinsey-article">
+
+<!-- ===== HERO ===== -->
+<div class="hero-banner">
+  <h1>AI駆動開発の汎用思考フレームワーク</h1>
+  <p class="hero-subtitle">開発プロセス全体の品質と効率を高める — 要件定義・設計・テスト・チーム運営の横断的プラクティス集</p>
+</div>
+
+<!-- ===== 4 PILLARS ===== -->
+<div class="pillars-grid">
+  <div class="pillar-card">
+    <span class="pillar-icon">&#9878;</span>
+    <h4>判断の確信度</h4>
+    <p>ツールではなく思考の質が生産性を決める</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128269;</span>
+    <h4>文脈情報の充足</h4>
+    <p>失敗の8割は文脈情報の欠落に起因する</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#9745;</span>
+    <h4>テストファースト</h4>
+    <p>作る前に「何をテストするか」を決める</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128221;</span>
+    <h4>思考の形跡</h4>
+    <p>「なぜそう作ったか」をドキュメントに残す</p>
+  </div>
+</div>
+
+<!-- ===== SECTION 1: REQUIREMENTS ===== -->
+<div class="section-header">
+  <div class="section-number">1</div>
+  <h2>要件定義フェーズ</h2>
+</div>
+
+<div class="sub-section">
+  <h3>三軸フィルター D &times; F &times; V</h3>
+  <p>あらゆるプロジェクトの要件を3軸で検証する。1軸でも欠けたまま進むと手戻りが発生する。</p>
+</div>
+
+<div class="axis-cards">
+  <div class="axis-card desirability">
+    <span class="axis-icon">&#10084;</span>
+    <h4>Desirability</h4>
+    <p class="axis-subtitle">需要</p>
+    <p class="axis-question">誰が、何のために使うか？</p>
+    <ul class="axis-examples">
+      <li>広告担当者が入稿作業を時短</li>
+      <li>営業がConnected Sheetsで日次KPI確認</li>
+    </ul>
+  </div>
+  <div class="axis-card feasibility">
+    <span class="axis-icon">&#9881;</span>
+    <h4>Feasibility</h4>
+    <p class="axis-subtitle">実現性</p>
+    <p class="axis-question">技術的に可能か？制約は？</p>
+    <ul class="axis-examples">
+      <li>APIレート制限、認証要件</li>
+      <li>テーブル容量、JOIN複雑度</li>
+    </ul>
+  </div>
+  <div class="axis-card viability">
+    <span class="axis-icon">&#128176;</span>
+    <h4>Viability</h4>
+    <p class="axis-subtitle">持続性</p>
+    <p class="axis-question">運用コストは見合うか？</p>
+    <ul class="axis-examples">
+      <li>API課金、トークン更新、障害対応</li>
+      <li>BQスキャンコスト、保守体制</li>
+    </ul>
+  </div>
+</div>
+
+<div class="insight-box">
+  <div class="insight-label">So What?</div>
+  <p>要件定義の最初に「D &times; F &times; V で見落としはないか？」と自問する。1軸でも欠けると手戻りコストが発生する。</p>
+</div>
+
+<div class="sub-section">
+  <h3>プレモーテム（事前検死）</h3>
+  <p>「このプロジェクトが失敗するとしたら原因は何か？」を着手前に考える。研究によると失敗特定能力が30%向上する。</p>
+</div>
+
+<div class="five-w-grid">
+  <div class="five-w-item">
+    <div class="w-letter">W</div>
+    <div class="w-label">Who fails</div>
+    <div class="w-question">誰が困るか</div>
+    <div class="w-hint">ユーザー？運用者？</div>
+  </div>
+  <div class="five-w-item">
+    <div class="w-letter">W</div>
+    <div class="w-label">What breaks</div>
+    <div class="w-question">何が壊れるか</div>
+    <div class="w-hint">データ欠損？認証切れ？</div>
+  </div>
+  <div class="five-w-item">
+    <div class="w-letter">W</div>
+    <div class="w-label">When noticed</div>
+    <div class="w-question">いつ気づくか</div>
+    <div class="w-hint">即座？月末集計時？</div>
+  </div>
+  <div class="five-w-item">
+    <div class="w-letter">W</div>
+    <div class="w-label">Where impact</div>
+    <div class="w-question">影響範囲は</div>
+    <div class="w-hint">単体？下流全体？</div>
+  </div>
+  <div class="five-w-item">
+    <div class="w-letter">W</div>
+    <div class="w-label">Why happened</div>
+    <div class="w-question">根本原因は</div>
+    <div class="w-hint">設計ミス？仕様変更？</div>
+  </div>
+</div>
+
+<div class="insight-box">
+  <div class="insight-label">So What?</div>
+  <p>3つ以上の失敗シナリオを挙げられないなら、要件の理解が浅い。</p>
+</div>
+
+<div class="sub-section">
+  <h3>受入条件ファースト（12項目チェックリスト）</h3>
+  <p>「何を作るか」ではなく「何ができたら完成か」を先に定義する。</p>
+</div>
+
+<div class="checklist-grid">
+  <div class="checklist-item"><span class="checklist-num">1</span><span>ゴールが1文で説明できるか</span></div>
+  <div class="checklist-item"><span class="checklist-num">2</span><span>入力データ/ソースが特定されているか</span></div>
+  <div class="checklist-item"><span class="checklist-num">3</span><span>出力の形式・格納先が決まっているか</span></div>
+  <div class="checklist-item"><span class="checklist-num">4</span><span>正常系の動作が定義されているか</span></div>
+  <div class="checklist-item"><span class="checklist-num">5</span><span>異常系（エラー時の動作）が定義されているか</span></div>
+  <div class="checklist-item"><span class="checklist-num">6</span><span>性能要件があるか</span></div>
+  <div class="checklist-item"><span class="checklist-num">7</span><span>セキュリティ要件があるか</span></div>
+  <div class="checklist-item"><span class="checklist-num">8</span><span>運用要件があるか</span></div>
+  <div class="checklist-item"><span class="checklist-num">9</span><span>テスト方法が決まっているか</span></div>
+  <div class="checklist-item"><span class="checklist-num">10</span><span>依存関係が明確か</span></div>
+  <div class="checklist-item"><span class="checklist-num">11</span><span>完了のサインオフ方法が決まっているか</span></div>
+  <div class="checklist-item"><span class="checklist-num">12</span><span>ロールバック方法が決まっているか</span></div>
+</div>
+
+<div class="insight-box">
+  <div class="insight-label">So What?</div>
+  <p>全12項目を埋める必要はない。「この項目は該当しない」と意識的に判断することが重要。</p>
+</div>
+
+<!-- ===== SECTION 2: DESIGN ===== -->
+<div class="section-header">
+  <div class="section-number">2</div>
+  <h2>設計フェーズ</h2>
+</div>
+
+<div class="sub-section">
+  <h3>代替案の比較（最低2案）</h3>
+  <p>1案だけで進めない。最低2つの選択肢を並べて比較してから決定する。</p>
+</div>
+
+<table class="comparison-table">
+  <tr><th>比較軸</th><th>問い</th></tr>
+  <tr><td><strong>実装コスト</strong></td><td>何時間/何日かかるか</td></tr>
+  <tr><td><strong>運用コスト</strong></td><td>月額いくらか。人的コストは</td></tr>
+  <tr><td><strong>複雑度</strong></td><td>メンテナンスしやすいか</td></tr>
+  <tr><td><strong>拡張性</strong></td><td>将来の変更に耐えるか</td></tr>
+  <tr><td><strong>リスク</strong></td><td>失敗した場合の影響は</td></tr>
+</table>
+
+<div class="sub-section">
+  <h3>ADR（Architecture Decision Record）</h3>
+  <p>「なぜこの設計にしたか」を未来の自分に説明できるように記録する。</p>
+</div>
+
+<div class="adr-template">
+  <h5>ADR-{番号}: {タイトル}</h5>
+  <div class="adr-field"><strong>結論:</strong> 1-2文で決定事項を明記</div>
+  <div class="adr-field"><strong>判断理由:</strong> 具体的な根拠を列挙</div>
+  <div class="adr-field"><strong>トレードオフ:</strong> 受け入れるデメリットと許容理由</div>
+  <div class="adr-field"><strong>参照:</strong> 関連ドキュメントへのリンク</div>
+</div>
+
+<div class="sub-section">
+  <h3>コスト意識</h3>
+  <p>正確な見積もりは不要。<strong>桁が合っているか</strong>（$1なのか$10なのか$100なのか）を把握するだけで十分。</p>
+</div>
+
+<div class="sub-section">
+  <h3>ガードレール設計（4層）</h3>
+  <p>「何をやっていいか」ではなく「何をやってはいけないか」を先に定義する。L4から始め、信頼度に応じて自動化を移す。</p>
+</div>
+
+<div class="layer-stack">
+  <div class="layer-item">
+    <span class="layer-badge">L1</span>
+    <div class="layer-content">
+      <h5>行動制限</h5>
+      <p>許可する操作のホワイトリスト（「読み取りのみ」「テストアカウントのみ」）</p>
+    </div>
+  </div>
+  <div class="layer-item">
+    <span class="layer-badge">L2</span>
+    <div class="layer-content">
+      <h5>出力検証</h5>
+      <p>結果の妥当性チェック（「行数が前回比 &plusmn;50%以内」）</p>
+    </div>
+  </div>
+  <div class="layer-item">
+    <span class="layer-badge">L3</span>
+    <div class="layer-content">
+      <h5>予算制御</h5>
+      <p>コスト・回数の上限（「月額$100以下」「1日あたりAPI 1000回まで」）</p>
+    </div>
+  </div>
+  <div class="layer-item">
+    <span class="layer-badge">L4</span>
+    <div class="layer-content">
+      <h5>人間承認</h5>
+      <p>重要操作は人間が最終判断（「本番広告配信」「データ削除」）</p>
+    </div>
+  </div>
+</div>
+
+<div class="insight-box">
+  <div class="insight-label">So What?</div>
+  <p>最初はL4（全件人間承認）で始め、実績と信頼度に応じてL1-L3に自動化を委譲していく。</p>
+</div>
+
+<!-- ===== SECTION 3: TESTING ===== -->
+<div class="section-header">
+  <div class="section-number">3</div>
+  <h2>テスト・検証フェーズ</h2>
+</div>
+
+<div class="sub-section">
+  <h3>DQ 7次元フレームワーク</h3>
+  <p>データ品質を7つの次元で検証する。どんなデータにも適用できる汎用フレームワーク。</p>
+</div>
+
+<div class="dq-grid">
+  <div class="dq-item required">
+    <span class="dq-icon">&#128275;</span>
+    <h5>一意性</h5>
+    <p class="dq-en">Uniqueness</p>
+    <p class="dq-method">主キーの重複チェック</p>
+    <span class="dq-badge">必須</span>
+  </div>
+  <div class="dq-item required">
+    <span class="dq-icon">&#9635;</span>
+    <h5>完全性</h5>
+    <p class="dq-en">Completeness</p>
+    <p class="dq-method">NULL率チェック</p>
+    <span class="dq-badge">必須</span>
+  </div>
+  <div class="dq-item required">
+    <span class="dq-icon">&#10003;</span>
+    <h5>妥当性</h5>
+    <p class="dq-en">Validity</p>
+    <p class="dq-method">値域・フォーマットチェック</p>
+    <span class="dq-badge">必須</span>
+  </div>
+  <div class="dq-item">
+    <span class="dq-icon">&#127919;</span>
+    <h5>正確性</h5>
+    <p class="dq-en">Accuracy</p>
+    <p class="dq-method">ソースデータとの突合</p>
+  </div>
+  <div class="dq-item">
+    <span class="dq-icon">&#128279;</span>
+    <h5>整合性</h5>
+    <p class="dq-en">Integrity</p>
+    <p class="dq-method">外部キー参照チェック</p>
+  </div>
+  <div class="dq-item">
+    <span class="dq-icon">&#9878;</span>
+    <h5>一貫性</h5>
+    <p class="dq-en">Consistency</p>
+    <p class="dq-method">クロスチェック</p>
+  </div>
+  <div class="dq-item">
+    <span class="dq-icon">&#9203;</span>
+    <h5>適時性</h5>
+    <p class="dq-en">Timeliness</p>
+    <p class="dq-method">最終更新日時チェック</p>
+  </div>
+</div>
+
+<div class="sub-section">
+  <h3>セルフレビュー 8ステップ</h3>
+  <p>PRやデプロイの前に自分自身で品質をチェックする。必須は <strong>1 + 3 + 7</strong> の3つ。</p>
+</div>
+
+<div class="steps-row">
+  <div class="step-item must">
+    <span class="step-num">1</span>
+    <h5>意図の言語化</h5>
+    <p>「なぜ」を1文で</p>
+  </div>
+  <div class="step-item">
+    <span class="step-num">2</span>
+    <h5>粒度の確認</h5>
+    <p>レコード数・単位</p>
+  </div>
+  <div class="step-item must">
+    <span class="step-num">3</span>
+    <h5>目視確認</h5>
+    <p>サンプルを見る</p>
+  </div>
+  <div class="step-item">
+    <span class="step-num">4</span>
+    <h5>ソース突合</h5>
+    <p>元データと照合</p>
+  </div>
+  <div class="step-item">
+    <span class="step-num">5</span>
+    <h5>極端値</h5>
+    <p>MIN/MAX/AVG</p>
+  </div>
+  <div class="step-item">
+    <span class="step-num">6</span>
+    <h5>NULL理解</h5>
+    <p>発生パターン</p>
+  </div>
+  <div class="step-item must">
+    <span class="step-num">7</span>
+    <h5>AI意図確認</h5>
+    <p>説明できるか</p>
+  </div>
+  <div class="step-item">
+    <span class="step-num">8</span>
+    <h5>一晩寝かせる</h5>
+    <p>翌日再確認</p>
+  </div>
+</div>
+
+<div class="insight-box">
+  <div class="insight-label">So What?</div>
+  <p>自動テストでは検出できない「意図の整合性」を人間が最終確認する。AIが書いたコードほど、意図確認ステップが重要。</p>
+</div>
+
+<!-- ===== SECTION 4: MINDSET ===== -->
+<div class="section-header">
+  <div class="section-number">4</div>
+  <h2>横断的マインドセット</h2>
+</div>
+
+<div class="sub-section">
+  <h3>コンテキストエンジニアリング</h3>
+  <p>「失敗の8割は文脈情報の欠落」。AIに渡す情報の質が成果物の質を決める。</p>
+</div>
+
+<table class="comparison-table">
+  <tr><th>要素</th><th>実践</th></tr>
+  <tr><td><strong>System Prompt</strong></td><td>CLAUDE.md / Rules でプロジェクト文脈を常時供給</td></tr>
+  <tr><td><strong>User Prompt</strong></td><td>「何を」「なぜ」「どの程度」を明示</td></tr>
+  <tr><td><strong>State / History</strong></td><td>/compact で要約、/clear でリセット</td></tr>
+  <tr><td><strong>Long-term Memory</strong></td><td>MEMORY.md で過去の教訓を蓄積</td></tr>
+  <tr><td><strong>Retrieved Info</strong></td><td>スキーマ確認ファースト、APIドキュメント事前取得</td></tr>
+  <tr><td><strong>Tools / Output</strong></td><td>Agentの役割分担、出力フォーマット統一</td></tr>
+</table>
+
+<div class="pillars-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128260;</span>
+    <h4>2回失敗ルール</h4>
+    <p>同じアプローチで2回失敗したら別の方法に切り替える</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#9854;</span>
+    <h4>冪等性の意識</h4>
+    <p>2回実行しても結果が変わらない設計にする</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128274;</span>
+    <h4>最小権限の原則</h4>
+    <p>全部NGから必要なものだけ開ける</p>
+  </div>
+</div>
+
+<!-- ===== SECTION 5: TEAM PRACTICES ===== -->
+<div class="section-header">
+  <div class="section-number">5</div>
+  <h2>チーム開発プラクティス</h2>
+</div>
+
+<div class="sub-section">
+  <h3>ドキュメント構造の型</h3>
+  <p>プロジェクトごとに以下の構造を標準化する。</p>
+</div>
+
+<div class="tree-container">
+docs/<br>
+├── specs/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;仕様書 — WHAT: 何を作るか<br>
+├── plan/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;計画 — WHY: なぜそう作るか（ADR含む）<br>
+├── runbooks/&nbsp;&nbsp;運用 — HOW: 障害時どうするか<br>
+├── tests/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;テスト — VERIFY: 正しく動くか<br>
+└── setup/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;セットアップ — ONBOARD: どう始めるか
+</div>
+
+<div class="sub-section">
+  <h3>仕様書ファースト（Spec-driven Development）</h3>
+  <p>コードを書く前に仕様書を書く。最低限 <strong>1（目的）+ 2（スコープ）+ 9（受入条件）</strong>で成立。</p>
+</div>
+
+<div class="specs-grid">
+  <div class="specs-item must"><span class="specs-num">1</span><span class="specs-text">目的 — なぜ作るか</span></div>
+  <div class="specs-item must"><span class="specs-num">2</span><span class="specs-text">スコープ / 非スコープ</span></div>
+  <div class="specs-item"><span class="specs-num">3</span><span class="specs-text">完了定義</span></div>
+  <div class="specs-item"><span class="specs-num">4</span><span class="specs-text">アーキテクチャ（データフロー）</span></div>
+  <div class="specs-item"><span class="specs-num">5</span><span class="specs-text">実装仕様</span></div>
+  <div class="specs-item"><span class="specs-num">6</span><span class="specs-text">冪等性・リトライ・ログ</span></div>
+  <div class="specs-item"><span class="specs-num">7</span><span class="specs-text">セキュリティ</span></div>
+  <div class="specs-item"><span class="specs-num">8</span><span class="specs-text">検証</span></div>
+  <div class="specs-item must"><span class="specs-num">9</span><span class="specs-text">受入条件（Acceptance Criteria）</span></div>
+  <div class="specs-item"><span class="specs-num">10</span><span class="specs-text">テストケース参照</span></div>
+</div>
+
+<div class="sub-section">
+  <h3>Issue-driven 開発</h3>
+  <p>変更の「なぜ」を追跡可能にする。半年後に Issue番号で全部追跡できる。</p>
+</div>
+
+<div class="process-flow">
+  <div class="process-step">Issue起票</div>
+  <span class="process-arrow">&#8594;</span>
+  <div class="process-step">ブランチ作成</div>
+  <span class="process-arrow">&#8594;</span>
+  <div class="process-step">Issue番号付きコミット</div>
+  <span class="process-arrow">&#8594;</span>
+  <div class="process-step">PR作成</div>
+  <span class="process-arrow">&#8594;</span>
+  <div class="process-step">レビュー</div>
+  <span class="process-arrow">&#8594;</span>
+  <div class="process-step">マージ</div>
+</div>
+
+<div class="pillars-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128203;</span>
+    <h4>PRに「Why」を強制</h4>
+    <p>Whatだけは3ヶ月後にゴミ。Whyがあれば資産。</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128230;</span>
+    <h4>環境再現性</h4>
+    <p>.env.example + requirements.txt で「何が必要か」を明示</p>
+  </div>
+  <div class="pillar-card">
+    <span class="pillar-icon">&#128196;</span>
+    <h4>Contract Test</h4>
+    <p>外部APIの入出力形式を明文化し、仕様変更事故を防ぐ</p>
+  </div>
+</div>
+
+<!-- ===== PRIORITY MATRIX ===== -->
+<div class="section-header">
+  <div class="section-number" style="background: var(--orange);">&#9733;</div>
+  <h2>実践の優先順位</h2>
+</div>
+
+<table class="priority-table">
+  <tr>
+    <th>優先度</th>
+    <th>実践項目</th>
+    <th>理由</th>
+  </tr>
+  <tr>
+    <td><span class="priority-badge always">毎回やる</span></td>
+    <td><strong>三軸フィルター</strong> + 受入条件3項目（目的・スコープ・受入条件）</td>
+    <td>手戻りの8割を防ぐ</td>
+  </tr>
+  <tr>
+    <td><span class="priority-badge always">毎回やる</span></td>
+    <td><strong>セルフレビュー3点</strong>（意図・目視・AI意図確認）</td>
+    <td>品質の最終防衛線</td>
+  </tr>
+  <tr>
+    <td><span class="priority-badge situational">迷ったら</span></td>
+    <td><strong>ADR</strong> + 代替案比較</td>
+    <td>判断の記録</td>
+  </tr>
+  <tr>
+    <td><span class="priority-badge situational">新規PJ時</span></td>
+    <td><strong>プロジェクト骨格テンプレート</strong> + Issue-driven</td>
+    <td>追跡可能性の確保</td>
+  </tr>
+  <tr>
+    <td><span class="priority-badge optional">外部API時</span></td>
+    <td><strong>Contract Test</strong> + ガードレール設計</td>
+    <td>障害調査の高速化</td>
+  </tr>
+</table>
+
+<div class="insight-box">
+  <div class="insight-label">Ultimate Insight</div>
+  <p>個別プロジェクトのスキルを量産するのではなく、この5つのフェーズ別フレームワークを反復適用することで、あらゆる開発の品質と効率が継続的に向上する。</p>
+</div>
+
+</div>
