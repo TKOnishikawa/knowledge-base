@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI駆動開発 構築編 — API統合・エージェントオーケストレーション</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN SYSTEM — McKinsey Light Theme + Left Navigation
+   ============================================================ */
+:root {
+  --bg-base: #f8f7f4;
+  --bg-surface: #ffffff;
+  --bg-warm: #f3f1ec;
+  --bg-warm-2: #eae6de;
+  --bg-code: #faf9f7;
+  --bg-hero: #0c1220;
+
+  --text-1: #1a1a2e;
+  --text-2: #4a4a5e;
+  --text-3: #8a8a9a;
+  --text-hero: #eaeaf2;
+
+  --blue: #2563eb;
+  --blue-light: #3b82f6;
+  --blue-bg: rgba(37,99,235,0.06);
+  --blue-border: rgba(37,99,235,0.15);
+  --cyan: #0891b2;
+  --green: #059669;
+  --green-bg: rgba(5,150,105,0.06);
+  --green-border: rgba(5,150,105,0.15);
+  --amber: #d97706;
+  --amber-bg: rgba(217,119,6,0.06);
+  --amber-border: rgba(217,119,6,0.15);
+  --red: #dc2626;
+  --red-bg: rgba(220,38,38,0.05);
+  --red-border: rgba(220,38,38,0.12);
+  --purple: #7c3aed;
+  --purple-bg: rgba(124,58,237,0.06);
+  --purple-border: rgba(124,58,237,0.15);
+
+  --border: #e5e2dc;
+  --border-light: #eeebe5;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.03);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+
+  --nav-width: 260px;
+  --font-jp: 'Noto Sans JP', -apple-system, sans-serif;
+  --font-en: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-jp);
+  background: var(--bg-base);
+  color: var(--text-1);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Left Navigation ===== */
+.sidenav {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--nav-width);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 28px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidenav::-webkit-scrollbar { width: 4px; }
+.sidenav::-webkit-scrollbar-track { background: transparent; }
+.sidenav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.nav-logo {
+  padding: 0 24px 20px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 16px;
+}
+.nav-logo-label {
+  font-family: var(--font-en);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+.nav-logo-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.5;
+}
+
+.nav-group { padding: 8px 16px; }
+.nav-group-label {
+  font-family: var(--font-en);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 12px 8px 6px;
+}
+.nav-link {
+  display: block;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-2);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.15s;
+  line-height: 1.6;
+}
+.nav-link:hover {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+.nav-link.active {
+  background: var(--blue-bg);
+  color: var(--blue);
+  font-weight: 600;
+}
+.nav-sub {
+  padding-left: 12px;
+  border-left: 1px solid var(--border-light);
+  margin-left: 8px;
+}
+.nav-sub .nav-link { font-size: 12px; padding: 4px 8px; }
+
+/* ===== Main Content ===== */
+.main {
+  margin-left: var(--nav-width);
+  min-height: 100vh;
+}
+
+/* ===== Hero ===== */
+.hero {
+  background: var(--bg-hero);
+  padding: 80px 48px 60px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -20%;
+  width: 900px; height: 900px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 65%);
+  animation: float-orb 16s ease-in-out infinite;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%; left: -10%;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 65%);
+  animation: float-orb 20s ease-in-out infinite reverse;
+}
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, 20px); }
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  font-family: var(--font-en);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--blue-light);
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+.hero-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.hero h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 800;
+  color: #f0ece6;
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero .lead {
+  font-size: 15px;
+  color: rgba(240,236,230,0.55);
+  font-weight: 300;
+  line-height: 1.9;
+  max-width: 600px;
+}
+.hero-meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-wrap: wrap;
+}
+.hero-meta span {
+  font-family: var(--font-en);
+  font-size: 12px;
+  color: rgba(240,236,230,0.35);
+}
+.hero-meta strong {
+  color: rgba(240,236,230,0.6);
+  font-weight: 500;
+}
+
+/* ===== Content ===== */
+.content { padding: 0 48px 80px; max-width: 900px; }
+section[id] { scroll-margin-top: 24px; }
+
+.section { padding: 56px 0 8px; }
+.section + .section { border-top: 1px solid var(--border-light); }
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-en);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.section-label::before {
+  content: '';
+  width: 28px;
+  height: 1.5px;
+}
+.section-label.blue { color: var(--blue); }
+.section-label.blue::before { background: var(--blue); }
+.section-label.green { color: var(--green); }
+.section-label.green::before { background: var(--green); }
+.section-label.amber { color: var(--amber); }
+.section-label.amber::before { background: var(--amber); }
+.section-label.red { color: var(--red); }
+.section-label.red::before { background: var(--red); }
+.section-label.purple { color: var(--purple); }
+.section-label.purple::before { background: var(--purple); }
+.section-label.cyan { color: var(--cyan); }
+.section-label.cyan::before { background: var(--cyan); }
+
+.section-title {
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+.section-sub {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 32px;
+  line-height: 1.85;
+  max-width: 680px;
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.card p, .card li {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.85;
+}
+.card-blue { border-left: 4px solid var(--blue); border-radius: 0 12px 12px 0; }
+.card-green { border-left: 4px solid var(--green); border-radius: 0 12px 12px 0; }
+.card-amber { border-left: 4px solid var(--amber); border-radius: 0 12px 12px 0; }
+.card-red { border-left: 4px solid var(--red); border-radius: 0 12px 12px 0; }
+.card-purple { border-left: 4px solid var(--purple); border-radius: 0 12px 12px 0; }
+.card-cyan { border-left: 4px solid var(--cyan); border-radius: 0 12px 12px 0; }
+
+.card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* ===== KPI Cards ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.kpi-number {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.kpi-number.blue { color: var(--blue); }
+.kpi-number.red { color: var(--red); }
+.kpi-number.green { color: var(--green); }
+.kpi-number.amber { color: var(--amber); }
+.kpi-number.purple { color: var(--purple); }
+.kpi-number.cyan { color: var(--cyan); }
+.kpi-unit {
+  font-size: 13px;
+  font-weight: 600;
+}
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ===== Tables ===== */
+.table-wrap {
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  background: var(--bg-warm);
+  font-weight: 600;
+  text-align: left;
+  padding: 11px 16px;
+  color: var(--text-1);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-2);
+  line-height: 1.7;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(37,99,235,0.02); }
+td:first-child { font-weight: 500; color: var(--text-1); }
+
+/* ===== Callouts ===== */
+.callout {
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  font-size: 13.5px;
+  line-height: 1.85;
+}
+.callout-blue { background: var(--blue-bg); border: 1px solid var(--blue-border); }
+.callout-blue strong { color: var(--blue); }
+.callout-green { background: var(--green-bg); border: 1px solid var(--green-border); }
+.callout-green strong { color: var(--green); }
+.callout-amber { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+.callout-amber strong { color: var(--amber); }
+.callout-red { background: var(--red-bg); border: 1px solid var(--red-border); }
+.callout-red strong { color: var(--red); }
+.callout-purple { background: var(--purple-bg); border: 1px solid var(--purple-border); }
+.callout-purple strong { color: var(--purple); }
+
+/* ===== Infographics ===== */
+.infographic {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 24px 0;
+}
+.infographic-title {
+  font-family: var(--font-en);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 20px;
+}
+
+/* Flow Diagram */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 12px;
+  min-width: 110px;
+}
+.flow-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.flow-icon.blue { background: var(--blue-bg); border: 1px solid var(--blue-border); }
+.flow-icon.green { background: var(--green-bg); border: 1px solid var(--green-border); }
+.flow-icon.amber { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+.flow-icon.purple { background: var(--purple-bg); border: 1px solid var(--purple-border); }
+.flow-icon.red { background: var(--red-bg); border: 1px solid var(--red-border); }
+.flow-icon.cyan { background: rgba(8,145,178,0.06); border: 1px solid rgba(8,145,178,0.15); }
+.flow-step-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 2px;
+}
+.flow-step-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.flow-arrow {
+  font-size: 18px;
+  color: var(--border);
+  flex-shrink: 0;
+}
+
+/* Gauge / Bar Charts */
+.bar-chart { margin: 16px 0; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.bar-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  min-width: 120px;
+  text-align: right;
+}
+.bar-track {
+  flex: 1;
+  height: 24px;
+  background: var(--bg-warm);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  transition: width 1.5s ease;
+}
+.bar-fill.blue { background: linear-gradient(90deg, var(--blue), var(--blue-light)); }
+.bar-fill.red { background: linear-gradient(90deg, var(--red), #f87171); }
+.bar-fill.green { background: linear-gradient(90deg, var(--green), #34d399); }
+.bar-fill.amber { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+.bar-fill.purple { background: linear-gradient(90deg, var(--purple), #a78bfa); }
+
+/* Comparison Block */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+.compare-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-en);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-3);
+}
+.compare-box {
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.compare-box.bad {
+  background: var(--red-bg);
+  border-color: var(--red-border);
+}
+.compare-box.good {
+  background: var(--green-bg);
+  border-color: var(--green-border);
+}
+.compare-box h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.compare-box.bad h4 { color: var(--red); }
+.compare-box.good h4 { color: var(--green); }
+.compare-box ul {
+  list-style: none;
+  padding: 0;
+}
+.compare-box li {
+  font-size: 13px;
+  color: var(--text-2);
+  padding: 3px 0;
+  padding-left: 18px;
+  position: relative;
+}
+.compare-box.bad li::before {
+  content: '\00d7';
+  position: absolute;
+  left: 0;
+  color: var(--red);
+  font-weight: 700;
+}
+.compare-box.good li::before {
+  content: '\2713';
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* Pyramid / Stack */
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 20px 0;
+}
+.pyramid-level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  border: 1px solid;
+  line-height: 1.5;
+}
+.pyramid-level:nth-child(1) { width: 40%; background: var(--purple-bg); border-color: var(--purple-border); }
+.pyramid-level:nth-child(2) { width: 55%; background: var(--red-bg); border-color: var(--red-border); }
+.pyramid-level:nth-child(3) { width: 70%; background: var(--amber-bg); border-color: var(--amber-border); }
+.pyramid-level:nth-child(4) { width: 90%; background: var(--blue-bg); border-color: var(--blue-border); }
+
+/* Timeline */
+.timeline { margin: 24px 0; padding-left: 20px; border-left: 2px solid var(--border); }
+.timeline-item { padding: 0 0 24px 20px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -25px; top: 6px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 2px solid var(--bg-base);
+}
+.timeline-item.green::before { background: var(--green); }
+.timeline-item.amber::before { background: var(--amber); }
+.timeline-item.purple::before { background: var(--purple); }
+.timeline-item.red::before { background: var(--red); }
+.timeline-label {
+  font-family: var(--font-en);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--blue);
+  margin-bottom: 2px;
+}
+.timeline-item.green .timeline-label { color: var(--green); }
+.timeline-item.amber .timeline-label { color: var(--amber); }
+.timeline-item.purple .timeline-label { color: var(--purple); }
+.timeline-item.red .timeline-label { color: var(--red); }
+.timeline-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.timeline-desc { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+.tag-blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.tag-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.tag-amber { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+.tag-red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.tag-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; margin: 16px 0; }
+.checklist li {
+  padding: 8px 0 8px 28px;
+  position: relative;
+  font-size: 13.5px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border-light);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 12px;
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+}
+.checklist li.checked::before {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.checklist li.checked::after {
+  content: '\2713';
+  position: absolute;
+  left: 3px; top: 10px;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Stat Highlight */
+.stat-highlight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.stat-highlight-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.stat-highlight-text {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+/* Blockquote */
+.bq {
+  border-left: 3px solid var(--blue);
+  padding: 12px 20px;
+  margin: 20px 0;
+  background: var(--blue-bg);
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-2);
+}
+.bq cite {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+/* Code block */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-1);
+}
+.code-block .comment { color: var(--text-3); }
+.code-block .keyword { color: var(--blue); font-weight: 600; }
+.code-block .string { color: var(--green); }
+.code-block .func { color: var(--purple); }
+
+/* Decision Tree (custom for this page) */
+.decision-tree {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 24px 0;
+}
+.dt-node {
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.dt-question {
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-border);
+  color: var(--blue);
+  font-weight: 700;
+  text-align: center;
+}
+.dt-branch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0;
+}
+.dt-yes {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.dt-yes strong { color: var(--green); }
+.dt-no {
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-border);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.dt-no strong { color: var(--amber); }
+.dt-result {
+  background: var(--purple-bg);
+  border: 1px solid var(--purple-border);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: center;
+}
+.dt-result strong { color: var(--purple); }
+.dt-connector {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* State Machine */
+.state-machine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 20px 0;
+}
+.state-node {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  min-width: 90px;
+}
+.state-draft { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); }
+.state-approved { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+.state-submitted { background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber); }
+.state-live { background: var(--purple-bg); border: 1px solid var(--purple-border); color: var(--purple); }
+.state-error { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+.state-arrow {
+  font-size: 16px;
+  color: var(--text-3);
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.state-label {
+  font-size: 10px;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* Footer */
+.footer {
+  padding: 40px 48px;
+  border-top: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 12px;
+}
+.footer a { color: var(--blue); text-decoration: none; }
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .sidenav { display: none; }
+  .main { margin-left: 0; }
+  .content { padding: 0 24px 60px; }
+  .hero { padding: 60px 24px 48px; }
+  .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .compare { grid-template-columns: 1fr; }
+  .compare-vs { padding: 8px 0; }
+  .flow { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .dt-branch { grid-template-columns: 1fr; }
+  .state-machine { flex-direction: column; }
+  .state-arrow { transform: rotate(90deg); }
+  .footer { padding: 40px 24px; }
+}
+
+/* Mobile nav toggle */
+.mobile-nav-toggle {
+  display: none;
+  position: fixed;
+  top: 12px; left: 12px;
+  z-index: 200;
+  width: 40px; height: 40px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 960px) {
+  .mobile-nav-toggle { display: flex; }
+  .sidenav.open { display: block; z-index: 150; }
+}
+
+/* Print */
+@media print {
+  .sidenav, .mobile-nav-toggle { display: none !important; }
+  .main { margin-left: 0; }
+  .hero { background: #fff; color: #000; }
+  .hero h1, .hero .lead { color: #000; -webkit-text-fill-color: #000; }
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile Nav Toggle -->
+<button class="mobile-nav-toggle" onclick="document.querySelector('.sidenav').classList.toggle('open')">&#9776;</button>
+
+<!-- ===== LEFT NAVIGATION ===== -->
+<nav class="sidenav" id="sidenav">
+  <div class="nav-logo">
+    <div class="nav-logo-label">Construction Guide</div>
+    <div class="nav-logo-title">AI駆動開発 構築編</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a href="#overview" class="nav-link">概要</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">API Integration</div>
+    <a href="#auth" class="nav-link">1. 認証設計</a>
+    <a href="#secrets" class="nav-link">2. シークレット管理</a>
+    <a href="#rate-limit" class="nav-link">3. レート制限</a>
+    <a href="#versioning" class="nav-link">4. バージョニング</a>
+    <a href="#testing" class="nav-link">5. テスト戦略</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Agent Orchestration</div>
+    <a href="#guardrails" class="nav-link">6. ガードレール</a>
+    <a href="#idempotency" class="nav-link">7. 冪等性</a>
+    <a href="#saga" class="nav-link">8. 補償トランザクション</a>
+    <a href="#model-selection" class="nav-link">9. モデル選択</a>
+    <a href="#case-studies" class="nav-link">10. 先行事例</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#sources" class="nav-link">ソース一覧</a>
+  </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main">
+
+<!-- ===== HERO ===== -->
+<div class="hero" id="overview">
+  <div class="hero-inner">
+    <div class="hero-badge">Construction Guide &mdash; 2026.03</div>
+    <h1>AI駆動開発 <em>構築編</em><br>API統合・エージェントオーケストレーション</h1>
+    <p class="lead">
+      非エンジニアDXコンサルタントのための構築判断ガイド。<br>
+      Meta / Google / Salesforce API統合と、マルチエージェント広告運用システムの設計原則をまとめた実行リファレンス。
+    </p>
+    <div class="hero-meta">
+      <span><strong>調査手法</strong> Grok Web Search + Gemini Deep Research</span>
+      <span><strong>対象PJ</strong> SYSDEVREQ-1173, 1109, BP v3</span>
+      <span><strong>作成日</strong> 2026-03-14</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ===== KPI OVERVIEW ===== -->
+<div class="kpi-grid" style="margin-top:40px;">
+  <div class="kpi-card">
+    <div class="kpi-number blue">3 <span class="kpi-unit">API</span></div>
+    <div class="kpi-label">認証パターン<br>(Meta / Google / Salesforce)</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number purple">4<span class="kpi-unit">層</span></div>
+    <div class="kpi-label">ガードレール設計<br>(アクション制限〜人間承認)</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number green">92.1<span class="kpi-unit">%</span></div>
+    <div class="kpi-label">マルチエージェント成功率<br>(vs 単一60%)</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 1: AUTH ===== -->
+<section class="section" id="auth">
+  <div class="section-label blue">Section 1</div>
+  <h2 class="section-title">認証設計 &mdash; API別の最適な認証方式を選ぶ</h2>
+  <p class="section-sub">
+    API統合の認証方式は3つに大別される。ユーザー代理操作が必要か、サーバー間自動処理か、公開データ限定かで判断する。
+  </p>
+
+  <!-- 認証判断フローチャート -->
+  <div class="decision-tree">
+    <div class="infographic-title">Authentication Decision Flow</div>
+
+    <div class="dt-node dt-question">Q1: ユーザーの代理で操作が必要か?</div>
+    <div class="dt-branch">
+      <div class="dt-yes">
+        <strong>YES</strong><br>
+        OAuth2 User Access Token
+      </div>
+      <div class="dt-no">
+        <strong>NO &rarr; Q2へ</strong>
+      </div>
+    </div>
+
+    <div class="dt-connector">&darr;</div>
+
+    <div class="dt-node dt-question">Q2: サーバー間の自動処理か?</div>
+    <div class="dt-branch">
+      <div class="dt-yes">
+        <strong>YES</strong><br>
+        Service Account / System User Token
+      </div>
+      <div class="dt-no">
+        <strong>NO</strong><br>
+        API Key（公開データ限定）
+      </div>
+    </div>
+  </div>
+
+  <!-- API別比較表 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">API別の推奨認証方式</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>API</th><th>推奨方式（サーバー間）</th><th>トークン寿命</th><th>更新方法</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Meta Ads API</td>
+          <td>System User Token</td>
+          <td>無期限（プログラム更新可）</td>
+          <td>Business Managerで生成。90日で再生成推奨</td>
+        </tr>
+        <tr>
+          <td>Google Ads API</td>
+          <td>Service Account (JWT)</td>
+          <td>1時間（自動再生成）</td>
+          <td>JSONキーから自動。90日でキー回転</td>
+        </tr>
+        <tr>
+          <td>Salesforce API</td>
+          <td>OAuth2 Client Credentials</td>
+          <td>設定可能（無期限も可）</td>
+          <td>接続アプリケーション設定で管理</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- トークン管理フロー -->
+  <div class="infographic">
+    <div class="infographic-title">Token Lifecycle Management &mdash; 4 Steps</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon blue">1</div>
+        <div class="flow-step-label">取得 &amp; 保存</div>
+        <div class="flow-step-desc">expires_in を<br>Secret Managerに保存</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon green">2</div>
+        <div class="flow-step-label">有効期限チェック</div>
+        <div class="flow-step-desc">APIコール前に<br>残り時間を確認</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon amber">3</div>
+        <div class="flow-step-label">自動リフレッシュ</div>
+        <div class="flow-step-desc">残り5分未満で<br>新トークン取得</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon red">4</div>
+        <div class="flow-step-label">アラート</div>
+        <div class="flow-step-desc">リフレッシュ失敗時<br>手動再認証へ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 長期運用リスク -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">長期運用での失効リスク</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>API</th><th>失効リスク</th><th>対策</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Google Ads</td>
+          <td>ユーザーがアクセス取消・長期不使用で失効</td>
+          <td>定期ヘルスチェック</td>
+        </tr>
+        <tr>
+          <td>Meta Ads</td>
+          <td>ビジネスマネージャー設定変更で無効化</td>
+          <td>System Userの権限監視</td>
+        </tr>
+        <tr>
+          <td>Salesforce</td>
+          <td>接続アプリケーション設定変更</td>
+          <td>ローテーション設定を明示</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== SECTION 2: SECRETS ===== -->
+<section class="section" id="secrets">
+  <div class="section-label green">Section 2</div>
+  <h2 class="section-title">シークレット管理 &mdash; Secret Manager vs 環境変数</h2>
+  <p class="section-sub">
+    本番環境では Secret Manager 一択。環境変数は開発時のみ。IAM制御・監査ログ・自動ローテーションが決め手。
+  </p>
+
+  <div class="compare">
+    <div class="compare-box good">
+      <h4>Secret Manager</h4>
+      <ul>
+        <li>IAM制御で細粒度アクセス管理</li>
+        <li>Cloud Logging / Asset Inventoryで監査可能</li>
+        <li>APIでバージョン管理・自動ローテーション</li>
+        <li>メモリ非露出（プロセスリスト漏洩なし）</li>
+      </ul>
+    </div>
+    <div class="compare-vs">VS</div>
+    <div class="compare-box bad">
+      <h4>環境変数</h4>
+      <ul>
+        <li>プロセスリスト/ログで漏洩リスク</li>
+        <li>ローテーション時に再デプロイが必要</li>
+        <li>監査ログなし</li>
+        <li>即時アクセスのみメリット</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SecretCache パターン -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">実装パターン: SecretCache クラス</h3>
+  <div class="code-block">
+<span class="comment"># シークレット管理クラス（単一責任原則）</span>
+<span class="keyword">class</span> <span class="func">SecretCache</span>:
+    <span class="keyword">def</span> <span class="func">__init__</span>(self, project_id, refresh_interval=300):  <span class="comment"># 5分キャッシュ</span>
+        self.client = secretmanager.SecretManagerServiceClient()
+        self.project_id = project_id
+        self._cache = {}
+
+    <span class="keyword">def</span> <span class="func">get</span>(self, secret_id, version=<span class="string">"latest"</span>):
+        <span class="comment"># キャッシュヒット → 即返却</span>
+        <span class="comment"># ミス → API取得 → キャッシュ → 返却</span>
+        ...
+  </div>
+
+  <ul class="checklist">
+    <li class="checked">GCP ConsoleでSecret Manager有効化</li>
+    <li class="checked"><code>gcloud secrets create api-key --data-file=/path/to/key</code></li>
+    <li class="checked">Cloud Run SAに <code>secretmanager.secretAccessor</code> 付与</li>
+    <li class="checked">コードで SecretCache を注入</li>
+  </ul>
+
+  <div class="callout callout-green">
+    <strong>セットアップ所要時間: 約10分</strong> &mdash; Secret ManagerはGCPの無料枠に含まれ（10,000アクセス/月）、追加コストはほぼゼロ。
+  </div>
+</section>
+
+<!-- ===== SECTION 3: RATE LIMIT ===== -->
+<section class="section" id="rate-limit">
+  <div class="section-label amber">Section 3</div>
+  <h2 class="section-title">レート制限 &mdash; 3パターンの使い分け</h2>
+  <p class="section-sub">
+    Exponential Backoff / Circuit Breaker / Queue-basedの3パターンを、エラー種別と負荷状況で選択する。
+  </p>
+
+  <!-- 3パターンカード -->
+  <div class="card-grid-3">
+    <div class="card card-blue" style="margin-bottom:0;">
+      <h3 style="color:var(--blue);">Exponential Backoff</h3>
+      <p>失敗時に待機時間を指数的に増加（1&rarr;2&rarr;4秒）+ ジッター</p>
+      <p style="margin-top:8px;"><span class="tag tag-blue">一時的429エラー</span></p>
+      <p style="margin-top:4px;font-size:12px;color:var(--text-3);">Tenacity <code>wait_exponential_jitter</code></p>
+    </div>
+    <div class="card card-amber" style="margin-bottom:0;">
+      <h3 style="color:var(--amber);">Circuit Breaker</h3>
+      <p>連続失敗でAPI呼び出し停止。回復後にテスト的に再開</p>
+      <p style="margin-top:8px;"><span class="tag tag-amber">カスケード障害防止</span></p>
+      <p style="margin-top:4px;font-size:12px;color:var(--text-3);">Tenacity <code>stop_after_attempt</code></p>
+    </div>
+    <div class="card card-purple" style="margin-bottom:0;">
+      <h3 style="color:var(--purple);">Queue-based</h3>
+      <p>リクエストをキューで定速処理（Token Bucket）</p>
+      <p style="margin-top:8px;"><span class="tag tag-purple">大量並行リクエスト</span></p>
+      <p style="margin-top:4px;font-size:12px;color:var(--text-3);">throttled-py / asyncio.Queue</p>
+    </div>
+  </div>
+
+  <!-- 選択フロー -->
+  <div class="decision-tree" style="margin-top:24px;">
+    <div class="infographic-title">Rate Limit Pattern Selection Flow</div>
+    <div class="dt-node dt-question">Q1: 一時的なエラー（429）か?</div>
+    <div class="dt-branch">
+      <div class="dt-yes">
+        <strong>YES</strong><br>
+        Exponential Backoff（Tenacity）
+      </div>
+      <div class="dt-no">
+        <strong>NO &rarr; Q2へ</strong>
+      </div>
+    </div>
+    <div class="dt-connector">&darr;</div>
+    <div class="dt-node dt-question">Q2: APIが長時間ダウンの可能性?</div>
+    <div class="dt-branch">
+      <div class="dt-yes">
+        <strong>YES</strong><br>
+        Circuit Breaker
+      </div>
+      <div class="dt-no">
+        <strong>NO &rarr; Q3へ</strong>
+      </div>
+    </div>
+    <div class="dt-connector">&darr;</div>
+    <div class="dt-node dt-question">Q3: 大量の並行リクエストを送るか?</div>
+    <div class="dt-branch">
+      <div class="dt-yes">
+        <strong>YES</strong><br>
+        Queue-based（throttled-py）
+      </div>
+      <div class="dt-no">
+        <strong>NO</strong><br>
+        Exponential Backoff で十分
+      </div>
+    </div>
+  </div>
+
+  <!-- API別レート制限 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">API別レート制限の具体値</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>API</th><th>制限値</th><th>超過時の挙動</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Meta Ads API</td>
+          <td>動的（使用率ベース）</td>
+          <td><strong style="color:var(--red);">300秒間ブロック</strong></td>
+        </tr>
+        <tr>
+          <td>Meta Insights API</td>
+          <td>大量取得時タイムアウト</td>
+          <td>非同期ジョブ利用推奨</td>
+        </tr>
+        <tr>
+          <td>Google Ads (mutate)</td>
+          <td>1リクエスト 10,000オペレーション</td>
+          <td>エラー返却</td>
+        </tr>
+        <tr>
+          <td>Google Ads (Audience)</td>
+          <td>2リクエスト/秒、約200/日/顧客ID</td>
+          <td>エラー返却</td>
+        </tr>
+        <tr>
+          <td>Google Ads (コンバージョン)</td>
+          <td>1リクエスト 2,000件</td>
+          <td>エラー返却</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-amber">
+    <strong>ベストプラクティス:</strong> リトライ回数は3-5回（過剰でSLA違反）。ジッター必須（サーバ負荷分散）。Retry-Afterヘッダを尊重。非リトライエラー（4xx固定）は除外。
+  </div>
+</section>
+
+<!-- ===== SECTION 4: VERSIONING ===== -->
+<section class="section" id="versioning">
+  <div class="section-label cyan">Section 4</div>
+  <h2 class="section-title">バージョニング &mdash; API変更に備える四半期サイクル</h2>
+  <p class="section-sub">
+    Meta Ads APIは四半期リリース、Google Adsは年4回。CAPI必須化など破壊的変更の追跡が運用の安定性を左右する。
+  </p>
+
+  <!-- Meta バージョンタイムライン -->
+  <div class="infographic">
+    <div class="infographic-title">Meta Ads API Version Timeline (2025-2026)</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-label">2025/01</div>
+        <div class="timeline-title">v22.0 リリース</div>
+        <div class="timeline-desc">特殊広告カテゴリ CREDIT &rarr; FINANCIAL_PRODUCTS_SERVICES 移行必須</div>
+      </div>
+      <div class="timeline-item green">
+        <div class="timeline-label">2025/05</div>
+        <div class="timeline-title">v23.0 リリース</div>
+        <div class="timeline-desc">サポート終了: 2026/6/9</div>
+      </div>
+      <div class="timeline-item amber">
+        <div class="timeline-label">2025/10</div>
+        <div class="timeline-title">v24.0 リリース</div>
+        <div class="timeline-desc">利用可能。Data Manager API GA</div>
+      </div>
+      <div class="timeline-item purple">
+        <div class="timeline-label">2026/01</div>
+        <div class="timeline-title">帰属窓口削除</div>
+        <div class="timeline-desc"><code>7d_view</code> / <code>28d_view</code> 削除。計測戦略の見直し必須</div>
+      </div>
+      <div class="timeline-item red">
+        <div class="timeline-label">2026/02</div>
+        <div class="timeline-title">v25.0 + ASCレガシー廃止</div>
+        <div class="timeline-desc">ASC/AACレガシーAPI 作成/更新不可。CAPI実装が必須化へ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Ads 変更 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">Google Ads API 2026年の重要変更</h3>
+  <div class="card-grid">
+    <div class="card card-blue">
+      <h3>バージョンサイクル加速</h3>
+      <p>2026年から年3回&rarr;4回に増加。マイナーリリースは毎月。V19は2026年2月に提供終了。</p>
+    </div>
+    <div class="card card-amber">
+      <h3>Demand Gen最低日予算</h3>
+      <p>2026/4/1以降、Demand Genキャンペーン最低日予算: 5 USD。低予算テストが制限される。</p>
+    </div>
+    <div class="card card-green">
+      <h3>Workload Identity推奨</h3>
+      <p>SAキー回転90日推奨 &rarr; Workload Identity移行でキー不要化。2026年推奨。</p>
+    </div>
+    <div class="card card-red">
+      <h3>Customer Match制限</h3>
+      <p>180日間アップロードなしの開発者トークン &rarr; Customer Match機能が無効化される。</p>
+    </div>
+  </div>
+
+  <!-- 移行ベストプラクティス -->
+  <ul class="checklist">
+    <li class="checked">四半期レビューサイクル: 1月/4月/7月/10月にChangelog確認</li>
+    <li class="checked">サンドボックスで新バージョンテスト</li>
+    <li>ブルーグリーン展開: 新旧バージョン並行運用でダウンタイム回避</li>
+    <li>減価償却3-6ヶ月前に移行計画立案</li>
+  </ul>
+</section>
+
+<!-- ===== SECTION 5: TESTING ===== -->
+<section class="section" id="testing">
+  <div class="section-label green">Section 5</div>
+  <h2 class="section-title">テスト戦略 &mdash; Sandbox / ドライラン / モック</h2>
+  <p class="section-sub">
+    APIテストは3種類。開発フェーズとCI/CDフェーズで使い分ける。本番環境を汚さないことが最優先。
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>テスト種別</th><th>用途</th><th>Meta Ads</th><th>Google Ads</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sandbox</td>
+          <td>本番影響なしでAPI検証</td>
+          <td>テストアプリ + サンドボックスアカウント</td>
+          <td>テストアカウント（配信されない）</td>
+        </tr>
+        <tr>
+          <td>ドライラン</td>
+          <td>入力バリデーションのみ</td>
+          <td><code>validate_only=true</code></td>
+          <td><code>mutate</code> の <code>validate_only</code></td>
+        </tr>
+        <tr>
+          <td>モック</td>
+          <td>CI/CDでの高速テスト</td>
+          <td>responses/vcrpy でHTTP記録</td>
+          <td>同左</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="infographic">
+    <div class="infographic-title">Test Strategy by Development Phase</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon blue">DEV</div>
+        <div class="flow-step-label">開発初期</div>
+        <div class="flow-step-desc">Sandbox +<br>ドライラン</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon green">CI</div>
+        <div class="flow-step-label">CI/CD</div>
+        <div class="flow-step-desc">モック<br>（速度優先）</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon amber">PRE</div>
+        <div class="flow-step-label">リリース前</div>
+        <div class="flow-step-desc">Sandbox +<br>実API統合テスト</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon purple">MIG</div>
+        <div class="flow-step-label">バージョン移行</div>
+        <div class="flow-step-desc">新旧バージョン<br>並行テスト</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="stat-highlight">
+      <div class="stat-highlight-num" style="color:var(--amber);">15K</div>
+      <div class="stat-highlight-text">Google Ads テストアカウントの1日あたりAPIオペレーション上限</div>
+    </div>
+    <div class="stat-highlight">
+      <div class="stat-highlight-num" style="color:var(--red);">N/A</div>
+      <div class="stat-highlight-text">Meta Adsは明示的サンドボックスなし。テストアカウント + 開発用アプリで代替</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: GUARDRAILS ===== -->
+<section class="section" id="guardrails">
+  <div class="section-label red">Section 6</div>
+  <h2 class="section-title">ガードレール設計 &mdash; エージェントの暴走を4層で防ぐ</h2>
+  <p class="section-sub">
+    マルチエージェントの「暴走」防止には4層のガードレールが必要。$47Kインシデントを二度と起こさないための設計原則。
+  </p>
+
+  <!-- 4層ガードレール ピラミッド -->
+  <div class="infographic">
+    <div class="infographic-title">4-Layer Guardrail Stack</div>
+    <div class="pyramid">
+      <div class="pyramid-level">L4: 人間承認（HITL）&mdash; 高リスクのみ</div>
+      <div class="pyramid-level">L3: 予算制御 &mdash; トークン/ステップ/コスト上限</div>
+      <div class="pyramid-level">L2: 出力検証 &mdash; クリティック/バリデータエージェント</div>
+      <div class="pyramid-level">L1: アクション制限 &mdash; 許可ツールマトリクス</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>層</th><th>対策</th><th>実装例</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--blue);">L1: アクション制限</td>
+          <td>許可ツールマトリクス</td>
+          <td>エージェントごとに使用可能ツールを制限</td>
+        </tr>
+        <tr>
+          <td style="color:var(--amber);">L2: 出力検証</td>
+          <td>クリティック/バリデータ</td>
+          <td>出力を別エージェントがレビュー</td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">L3: 予算制御</td>
+          <td>トークン/ステップ/コスト上限</td>
+          <td><code>MAX_STEPS=6</code>、コスト閾値 50/75/90%</td>
+        </tr>
+        <tr>
+          <td style="color:var(--purple);">L4: 人間承認</td>
+          <td>HITL（高リスクのみ）</td>
+          <td>承認チェックポイント挿入</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- $47K事件の警告カード -->
+  <div class="callout callout-red">
+    <strong>$47K インシデント事例</strong><br>
+    2つのAIエージェントが再帰ループに陥り、<strong>$47,000</strong>のAPI使用料が発生。
+    MAX_STEPS でステップ数上限を設定し、トークン/コスト累計の閾値チェック（50%/75%/90%でアラート）を導入すること。
+    FINOS AIガバナンスフレームワークの DoW（Denial of Wallet）防止を参照。
+  </div>
+
+  <!-- HITL判断基準 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">HITL（人間承認）の適用基準</h3>
+  <div class="decision-tree">
+    <div class="infographic-title">Human-in-the-Loop Decision</div>
+    <div class="dt-node dt-question">このアクションは...</div>
+    <div class="card-grid" style="margin-top:12px;">
+      <div class="card card-red" style="margin-bottom:0;">
+        <h3 style="color:var(--red);">HITL 必須</h3>
+        <ul style="list-style:none;padding:0;">
+          <li style="padding:4px 0;">- 財務影響あり（広告費支出）</li>
+          <li style="padding:4px 0;">- データ削除/変更</li>
+          <li style="padding:4px 0;">- 外部通信（メール/API投稿）</li>
+        </ul>
+      </div>
+      <div class="card card-green" style="margin-bottom:0;">
+        <h3 style="color:var(--green);">自動実行 OK</h3>
+        <ul style="list-style:none;padding:0;">
+          <li style="padding:4px 0;">- 読み取りのみ</li>
+          <li style="padding:4px 0;">- 内部処理（ログ、集計）</li>
+          <li style="padding:4px 0;">- ドライランモード</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-highlight">
+    <div class="stat-highlight-num" style="color:var(--blue);">59.8<span style="font-size:14px;">%</span></div>
+    <div class="stat-highlight-text">HITLを使用している組織の割合（LangChain State of Agent Engineering 2026）</div>
+  </div>
+
+  <!-- 状態機械 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">状態機械（State Machine）ベースのワークフロー</h3>
+  <p style="font-size:13.5px;color:var(--text-2);margin-bottom:16px;">非決定的動作を排除する基盤。広告入稿システムの例:</p>
+
+  <div class="infographic">
+    <div class="infographic-title">Ad Submission State Machine</div>
+    <div class="state-machine">
+      <div>
+        <div class="state-node state-draft">DRAFT</div>
+        <div class="state-label">下書き</div>
+      </div>
+      <div class="state-arrow">&rarr;</div>
+      <div>
+        <div class="state-node state-approved">APPROVED</div>
+        <div class="state-label">承認済み</div>
+      </div>
+      <div class="state-arrow">&rarr;</div>
+      <div>
+        <div class="state-node state-submitted">SUBMITTED</div>
+        <div class="state-label">入稿済み</div>
+      </div>
+      <div class="state-arrow">&rarr;</div>
+      <div>
+        <div class="state-node state-live">LIVE</div>
+        <div class="state-label">配信中</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <span class="state-arrow">&darr;</span>
+      <span style="font-size:12px;color:var(--text-3);margin:0 8px;">エラー発生時</span>
+      <span class="state-arrow">&darr;</span>
+    </div>
+    <div style="text-align:center;margin-top:8px;">
+      <div class="state-node state-error" style="display:inline-block;">ERROR &rarr; 補償トランザクション</div>
+    </div>
+  </div>
+
+  <!-- フレームワーク比較 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">フレームワーク比較</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>フレームワーク</th><th>特徴</th><th>適用シナリオ</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LangGraph</td>
+          <td>グラフベース状態管理、条件分岐</td>
+          <td>複雑なワークフロー制御</td>
+        </tr>
+        <tr>
+          <td>CrewAI</td>
+          <td>役割ベース、Flows（決定論的バックボーン）</td>
+          <td>チーム構成のエージェント</td>
+        </tr>
+        <tr>
+          <td>Claude Agent SDK</td>
+          <td>Bash/Web/Editツール内蔵、シンプル</td>
+          <td>Claude中心のエージェント</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>推奨:</strong> 状態管理（LangGraph的）+ 役割分担（CrewAI的）のハイブリッド。ただし現環境（Claude + Python）ではClaude Agent SDKベースで十分。
+  </div>
+
+  <!-- データ受け渡し -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">エージェント間データ受け渡しの選択基準</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>手段</th><th>適用シーン</th><th>永続性</th><th>監査可能性</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>メモリ</td>
+          <td>同一プロセス内の短寿命データ</td>
+          <td><span class="tag tag-red">なし</span></td>
+          <td><span class="tag tag-red">なし</span></td>
+        </tr>
+        <tr>
+          <td>ファイル</td>
+          <td>小規模・一時的中間データ</td>
+          <td><span class="tag tag-amber">一時的</span></td>
+          <td><span class="tag tag-amber">ログ次第</span></td>
+        </tr>
+        <tr>
+          <td>BigQuery</td>
+          <td>永続化・複数エージェント共有</td>
+          <td><span class="tag tag-green">永続</span></td>
+          <td><span class="tag tag-green">高</span></td>
+        </tr>
+        <tr>
+          <td>Sheets</td>
+          <td>PoC・人間レビューが多い小規模</td>
+          <td><span class="tag tag-green">永続</span></td>
+          <td><span class="tag tag-amber">低</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== SECTION 7: IDEMPOTENCY ===== -->
+<section class="section" id="idempotency">
+  <div class="section-label purple">Section 7</div>
+  <h2 class="section-title">冪等性 &mdash; 同じ操作を繰り返しても安全な設計</h2>
+  <p class="section-sub">
+    広告入稿では「二重入稿」防止が最重要。Idempotency Key + ステータス管理で確実に制御する。
+  </p>
+
+  <!-- Idempotency Key フロー -->
+  <div class="infographic">
+    <div class="infographic-title">Idempotency Check Flow</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon blue">REQ</div>
+        <div class="flow-step-label">リクエスト受信</div>
+        <div class="flow-step-desc">Idempotency Key<br>を生成/受取</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon amber">CHK</div>
+        <div class="flow-step-label">Key存在チェック</div>
+        <div class="flow-step-desc">BQ/Postgres<br>でルックアップ</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon green">HIT</div>
+        <div class="flow-step-label">存在 &amp; COMPLETED</div>
+        <div class="flow-step-desc">キャッシュ結果<br>を即返却</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin:12px 0;">
+      <span style="font-size:12px;color:var(--text-3);">Key不存在の場合 &darr;</span>
+    </div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon purple">INS</div>
+        <div class="flow-step-label">PENDING挿入</div>
+        <div class="flow-step-desc">ステータスを<br>PENDINGで記録</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon cyan">EXEC</div>
+        <div class="flow-step-label">処理実行</div>
+        <div class="flow-step-desc">API呼び出し<br>を実行</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon green">UPD</div>
+        <div class="flow-step-label">COMPLETED更新</div>
+        <div class="flow-step-desc">レスポンスと共に<br>完了記録</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key生成パターン -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">Idempotency Key の生成</h3>
+  <div class="code-block">
+<span class="comment"># ビジネスID + コンテンツハッシュ</span>
+key = <span class="string">f"{campaign_id}:{hashlib.sha256(ad_spec.encode()).hexdigest()}"</span>
+  </div>
+
+  <!-- BQテーブル設計 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">submission_log テーブル設計</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>submission_id</td><td>STRING</td><td>Idempotency Key</td></tr>
+        <tr><td>campaign_id</td><td>STRING</td><td>キャンペーンID</td></tr>
+        <tr><td>status</td><td>STRING</td><td>PENDING / COMPLETED / FAILED / COMPENSATED</td></tr>
+        <tr><td>request_payload</td><td>JSON</td><td>リクエスト内容</td></tr>
+        <tr><td>response_payload</td><td>JSON</td><td>レスポンス内容</td></tr>
+        <tr><td>created_at</td><td>TIMESTAMP</td><td>作成日時</td></tr>
+        <tr><td>updated_at</td><td>TIMESTAMP</td><td>更新日時</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== SECTION 8: SAGA ===== -->
+<section class="section" id="saga">
+  <div class="section-label red">Section 8</div>
+  <h2 class="section-title">補償トランザクション &mdash; Sagaパターンで整合性を保つ</h2>
+  <p class="section-sub">
+    分散トランザクションでACIDを諦め、各ステップのローカルトランザクション + 補償アクションで整合性を保つ。
+  </p>
+
+  <!-- Saga フロー図 -->
+  <div class="infographic">
+    <div class="infographic-title">Saga Pattern &mdash; Ad Submission Pipeline</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon blue">S1</div>
+        <div class="flow-step-label">Campaign作成</div>
+        <div class="flow-step-desc">補償: Campaign削除</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon green">S2</div>
+        <div class="flow-step-label">AdSet作成</div>
+        <div class="flow-step-desc">補償: AdSet削除</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon amber">S3</div>
+        <div class="flow-step-label">Ad作成</div>
+        <div class="flow-step-desc">補償: Ad削除</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon purple">S4</div>
+        <div class="flow-step-label">配信開始</div>
+        <div class="flow-step-desc">補償: 配信停止<br>(不可逆の場合あり)</div>
+      </div>
+    </div>
+
+    <!-- 失敗時の逆順補償 -->
+    <div style="text-align:center;margin:16px 0 8px;">
+      <span style="font-size:12px;color:var(--red);font-weight:600;">Ad作成でエラー発生 &darr; 逆順で補償実行</span>
+    </div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon red">!</div>
+        <div class="flow-step-label">Ad失敗</div>
+        <div class="flow-step-desc">エラーをキャッチ</div>
+      </div>
+      <div class="flow-arrow" style="color:var(--red);">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon red">-S2</div>
+        <div class="flow-step-label">AdSet削除</div>
+        <div class="flow-step-desc">補償実行</div>
+      </div>
+      <div class="flow-arrow" style="color:var(--red);">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon red">-S1</div>
+        <div class="flow-step-label">Campaign削除</div>
+        <div class="flow-step-desc">補償実行</div>
+      </div>
+      <div class="flow-arrow" style="color:var(--red);">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon red">LOG</div>
+        <div class="flow-step-label">COMPENSATED</div>
+        <div class="flow-step-desc">ステータス記録<br>+ 人間通知</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ロールバック判断基準 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">ロールバック判断の4基準</h3>
+  <div class="card-grid">
+    <div class="card card-blue" style="margin-bottom:0;">
+      <h3 style="color:var(--blue);">1. 影響度</h3>
+      <p>部分失敗がビジネスに与える影響の大きさ。広告費の無駄遣いリスクを評価。</p>
+    </div>
+    <div class="card card-green" style="margin-bottom:0;">
+      <h3 style="color:var(--green);">2. 可逆性</h3>
+      <p>作成したリソースをAPI DELETEで削除できるか。メール送信は不可逆。</p>
+    </div>
+    <div class="card card-amber" style="margin-bottom:0;">
+      <h3 style="color:var(--amber);">3. コスト</h3>
+      <p>ロールバック自体のAPI呼び出しコスト。レート制限への影響を考慮。</p>
+    </div>
+    <div class="card card-purple" style="margin-bottom:0;">
+      <h3 style="color:var(--purple);">4. ビジネス要件</h3>
+      <p>アトミック性を求めるか（全成功 or 全失敗）。部分的成功の許容度。</p>
+    </div>
+  </div>
+
+  <!-- 補償の分類 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">補償の分類</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>種別</th><th>例</th><th>補償方法</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-green">可逆</span></td>
+          <td>Campaign/AdSet/Ad作成</td>
+          <td>API DELETE で削除</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-red">不可逆</span></td>
+          <td>メール送信済み、課金処理</td>
+          <td>ログ記録 + 手動フォローアップ</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">冪等補償</span></td>
+          <td>配信停止（何度実行しても同じ結果）</td>
+          <td>安全に繰り返し可能</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- エラーハンドリング5パターン -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">エラーハンドリング 5パターン（プロダクション推奨）</h3>
+  <div class="card-grid">
+    <div class="card card-blue" style="margin-bottom:0;">
+      <h3>1. Circuit Breaker</h3>
+      <p>LLM出力品質（JSON違反）で回路開放</p>
+    </div>
+    <div class="card card-green" style="margin-bottom:0;">
+      <h3>2. 事前検証</h3>
+      <p>ツールコール前にスキーマ/サニティチェック</p>
+    </div>
+    <div class="card card-amber" style="margin-bottom:0;">
+      <h3>3. Idempotent Saga</h3>
+      <p>グラフで補償ルートを定義</p>
+    </div>
+    <div class="card card-red" style="margin-bottom:0;">
+      <h3>4. 予算ガード</h3>
+      <p>トークン/サイクル上限を設定</p>
+    </div>
+  </div>
+  <div class="card card-purple" style="margin-top:16px;">
+    <h3>5. 人間エスカレーション</h3>
+    <p>高リスク（削除/支出）で中断 + 承認を要求</p>
+  </div>
+
+  <div class="stat-highlight">
+    <div class="stat-highlight-num" style="color:var(--green);">&lt;2.5<span style="font-size:14px;">%</span></div>
+    <div class="stat-highlight-text">目標エラー率。シミュレーション検証必須。SagaLLM（VLDB 2025）準拠。</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 9: MODEL SELECTION ===== -->
+<section class="section" id="model-selection">
+  <div class="section-label blue">Section 9</div>
+  <h2 class="section-title">モデル選択 &mdash; タスク別の定量的判断基準</h2>
+  <p class="section-sub">
+    Haiku / Sonnet / Opus をタスク難度とコストで使い分ける。デフォルトはHaikuで、失敗時のみSonnetにエスカレーション。
+  </p>
+
+  <!-- モデル比較表 -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>モデル</th><th>知能レベル</th><th>速度</th><th>コスト (入力/出力 per 1M)</th><th>エージェント適性</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Haiku 4.5</td>
+          <td>ニアフロンティア</td>
+          <td><span class="tag tag-green">最速</span></td>
+          <td>$1 / $5</td>
+          <td>簡単タスク・高スループット</td>
+        </tr>
+        <tr>
+          <td>Sonnet 4.6</td>
+          <td>高速・高知能バランス</td>
+          <td><span class="tag tag-blue">高速</span></td>
+          <td>$3 / $15</td>
+          <td>複雑エージェント・主力</td>
+        </tr>
+        <tr>
+          <td>Opus 4.6</td>
+          <td>最高知能</td>
+          <td><span class="tag tag-amber">中速</span></td>
+          <td>$5 / $25</td>
+          <td>高度エージェント</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- コスト比較バーチャート -->
+  <div class="infographic">
+    <div class="infographic-title">Cost Comparison &mdash; 10M Input / 2M Output Workload</div>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label">Haiku 4.5</div>
+        <div class="bar-track">
+          <div class="bar-fill green" style="width:33%;">$20</div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Sonnet 4.6</div>
+        <div class="bar-track">
+          <div class="bar-fill blue" style="width:66%;">$60</div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Opus 4.6</div>
+        <div class="bar-track">
+          <div class="bar-fill purple" style="width:100%;">$100</div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);text-align:center;margin-top:8px;">Haikuデフォルト戦略で全体のSonnet使用率を20-30%に抑制 &rarr; コスト3倍差</p>
+  </div>
+
+  <!-- タスク別ガイド -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">タスク別モデル選択ガイド</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>タスク種別</th><th>推奨モデル</th><th>理由</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>入力バリデーション</td>
+          <td><span class="tag tag-green">Haiku</span></td>
+          <td>パターンマッチング中心、速度優先</td>
+        </tr>
+        <tr>
+          <td>広告スペック生成</td>
+          <td><span class="tag tag-blue">Sonnet</span></td>
+          <td>創造性 + 正確性のバランス</td>
+        </tr>
+        <tr>
+          <td>異常検知・判断</td>
+          <td><span class="tag tag-blue">Sonnet</span></td>
+          <td>複雑な推論が必要</td>
+        </tr>
+        <tr>
+          <td>ログ構造化</td>
+          <td><span class="tag tag-amber">LLM不要</span></td>
+          <td>定型変換はPythonで十分</td>
+        </tr>
+        <tr>
+          <td>レビュー・批評</td>
+          <td><span class="tag tag-purple">Sonnet/Opus</span></td>
+          <td>高品質な判断が必要</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ルーティング戦略 -->
+  <div class="callout callout-blue">
+    <strong>ルーティング戦略:</strong> デフォルトはHaikuで、タスク種別が generation / review / anomaly の場合のみSonnetにルーティング。
+    全体のSonnet使用率を20-30%に抑制することで、10M入力/2M出力ワークロードでHaiku $20 vs Sonnet $60（3倍差）のコスト最適化を実現。
+  </div>
+</section>
+
+<!-- ===== SECTION 10: CASE STUDIES ===== -->
+<section class="section" id="case-studies">
+  <div class="section-label green">Section 10</div>
+  <h2 class="section-title">先行事例 &mdash; マルチエージェント広告運用の実績</h2>
+  <p class="section-sub">
+    CrewAIの「Team of Rivals」アーキテクチャが複雑タスクで92.1%の成功率を達成。楽観的プランナー vs 懐疑的批評家の対立構造がエラーを低減。
+  </p>
+
+  <!-- 成果事例テーブル -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>企業/事例</th><th>エージェント構成</th><th>成果</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Jumeirah (Smartly.io)</td>
+          <td>予測予算配分エージェント</td>
+          <td><strong style="color:var(--green);">ROAS 109%向上、CPC 59%減、372時間節約</strong></td>
+        </tr>
+        <tr>
+          <td>Crabtree &amp; Evelyn</td>
+          <td>広告最適化エージェント</td>
+          <td><strong style="color:var(--green);">ROAS 30%向上</strong></td>
+        </tr>
+        <tr>
+          <td>Grayson Living</td>
+          <td>マルチチャネル最適化</td>
+          <td><strong style="color:var(--green);">ROAS 6倍</strong></td>
+        </tr>
+        <tr>
+          <td>CrewAI B2B SaaS</td>
+          <td>Research&rarr;Write&rarr;Critique</td>
+          <td><strong style="color:var(--green);">月間投稿4&rarr;20件、編集60%削減</strong></td>
+        </tr>
+        <tr>
+          <td>Klarna</td>
+          <td>マーケティング自動化</td>
+          <td><strong style="color:var(--green);">運用コスト37%削減</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 成功率比較 -->
+  <div class="infographic">
+    <div class="infographic-title">Task Success Rate Comparison</div>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label">マルチエージェント</div>
+        <div class="bar-track">
+          <div class="bar-fill green" style="width:92%;">92.1%</div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">単一エージェント</div>
+        <div class="bar-track">
+          <div class="bar-fill amber" style="width:60%;">60%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team of Rivals -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">CrewAI推奨: &ldquo;Team of Rivals&rdquo; アーキテクチャ</h3>
+  <div class="card-grid-3">
+    <div class="card card-blue" style="margin-bottom:0;">
+      <h3 style="color:var(--blue);">Senior Researcher</h3>
+      <p>競合分析・SERP・キーワード調査</p>
+      <p style="margin-top:8px;"><span class="tag tag-blue">GPT-4o / Sonnet</span></p>
+    </div>
+    <div class="card card-green" style="margin-bottom:0;">
+      <h3 style="color:var(--green);">Professional Writer</h3>
+      <p>ドラフト生成・コピーライティング</p>
+      <p style="margin-top:8px;"><span class="tag tag-green">GPT-4o / Sonnet</span></p>
+    </div>
+    <div class="card card-amber" style="margin-bottom:0;">
+      <h3 style="color:var(--amber);">Skeptical Critic</h3>
+      <p>事実誤認/SEO欠陥チェック</p>
+      <p style="margin-top:8px;"><span class="tag tag-amber">Haiku（軽量）</span></p>
+    </div>
+  </div>
+
+  <!-- SYSDEVREQ-1173 適用 -->
+  <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">SYSDEVREQ-1173 広告入稿システムへの適用案</h3>
+  <div class="infographic">
+    <div class="infographic-title">Agent Architecture for Ad Submission System</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon green">SCAN</div>
+        <div class="flow-step-label">asset-scanner</div>
+        <div class="flow-step-desc">素材チェック<br>メタデータ抽出<br><span class="tag tag-green" style="font-size:10px;">Haiku</span></div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon blue">VAL</div>
+        <div class="flow-step-label">spec-validator</div>
+        <div class="flow-step-desc">入稿仕様検証<br>異常検知<br><span class="tag tag-blue" style="font-size:10px;">Sonnet</span></div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon purple">BUILD</div>
+        <div class="flow-step-label">campaign-builder</div>
+        <div class="flow-step-desc">キャンペーン構築<br>API呼び出し<br><span class="tag tag-purple" style="font-size:10px;">Sonnet</span></div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="flow-icon amber">LOG</div>
+        <div class="flow-step-label">submission-logger</div>
+        <div class="flow-step-desc">ログ記録<br>ステータス更新<br><span class="tag tag-amber" style="font-size:10px;">LLM不要</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bq">
+    &ldquo;Team of Rivals&rdquo;の核心は、楽観的な生成エージェントと懐疑的な批評エージェントを意図的に対立させることで、単一エージェントでは見逃すエラーを検出すること。
+    <cite>&mdash; CrewAI Case Studies, Multi-Agent Marketing Teams Guide (2026)</cite>
+  </div>
+</section>
+
+<!-- ===== SOURCES ===== -->
+<section class="section" id="sources">
+  <div class="section-label blue">Sources</div>
+  <h2 class="section-title">ソース一覧</h2>
+
+  <h3 style="font-size:14px;font-weight:700;margin:16px 0 8px;color:var(--blue);">API統合パターン</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>Meta Marketing API Access &mdash; <a href="https://developers.facebook.com/docs/marketing-api/access" style="color:var(--blue);">developers.facebook.com</a></li>
+    <li>Meta Marketing API Changelog &mdash; <a href="https://developers.facebook.com/docs/marketing-api/marketing-api-changelog" style="color:var(--blue);">developers.facebook.com</a></li>
+    <li>Graph API Versioning &mdash; <a href="https://developers.facebook.com/docs/graph-api/guides/versioning" style="color:var(--blue);">developers.facebook.com</a></li>
+    <li>Google Ads OAuth Service Accounts &mdash; <a href="https://developers.google.com/google-ads/api/docs/oauth/service-accounts" style="color:var(--blue);">developers.google.com</a></li>
+    <li>GCP Secret Manager Best Practices &mdash; <a href="https://cloud.google.com/secret-manager/docs/best-practices" style="color:var(--blue);">cloud.google.com</a></li>
+    <li>Cloud Run Secrets &mdash; <a href="https://docs.cloud.google.com/run/docs/configuring/services/secrets" style="color:var(--blue);">docs.cloud.google.com</a></li>
+    <li>Tenacity: Retrying Library &mdash; <a href="https://tenacity.readthedocs.io/" style="color:var(--blue);">tenacity.readthedocs.io</a></li>
+  </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--green);">エージェントオーケストレーション</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>Anthropic: Building Effective Agents &mdash; <a href="https://www.anthropic.com/research/building-effective-agents" style="color:var(--blue);">anthropic.com</a></li>
+    <li>Claude Agent SDK Overview &mdash; <a href="https://platform.claude.com/docs/en/agent-sdk/overview" style="color:var(--blue);">platform.claude.com</a></li>
+    <li>Claude Models Overview &mdash; <a href="https://docs.anthropic.com/en/docs/about-claude/models/overview" style="color:var(--blue);">docs.anthropic.com</a></li>
+    <li>FINOS AI Governance Framework &mdash; <a href="https://air-governance-framework.finos.org/" style="color:var(--blue);">finos.org</a></li>
+    <li>LangChain State of Agent Engineering &mdash; <a href="https://www.langchain.com/state-of-agent-engineering" style="color:var(--blue);">langchain.com</a></li>
+    <li>CrewAI Case Studies &mdash; <a href="https://crewai.com/case-studies" style="color:var(--blue);">crewai.com</a></li>
+    <li>$47K Agent Loop Incident &mdash; <a href="https://www.linkedin.com/posts/edgeandnode_a-47k-incident-two-ai-agents-stuck-in-a-activity-7432127883315392512-CRZi" style="color:var(--blue);">LinkedIn</a></li>
+  </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--red);">研究論文・技術資料</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>SagaLLM (VLDB 2025) &mdash; <a href="https://www.vldb.org/pvldb/vol18/p4874-chang.pdf" style="color:var(--blue);">vldb.org</a></li>
+    <li>IBM STRATUS Undo Agent &mdash; <a href="https://research.ibm.com/blog/undo-agent-for-cloud" style="color:var(--blue);">research.ibm.com</a></li>
+    <li>AgentDoG Framework (arXiv) &mdash; <a href="https://arxiv.org/pdf/2601.18491" style="color:var(--blue);">arXiv</a></li>
+    <li>Reliable AI Starts with Idempotency &mdash; <a href="https://balaaagi.in/posts/reliable-ai-starts-with-idempotency-not-bigger-models" style="color:var(--blue);">balaaagi.in</a></li>
+    <li>Agentic AI in Production (2026 Guide) &mdash; <a href="https://medium.com/@dewasheesh.rana/agentic-ai-in-production-designing-autonomous-multi-agent-systems-with-guardrails-2026-guide-a5a1c8461772" style="color:var(--blue);">Medium</a></li>
+    <li>PraisonAI Error Handling &mdash; <a href="https://docs.praison.ai/docs/best-practices/error-handling" style="color:var(--blue);">praison.ai</a></li>
+  </ul>
+
+  <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--amber);">マルチエージェント事例</h3>
+  <ul style="font-size:12.5px;color:var(--text-2);line-height:2;padding-left:18px;">
+    <li>Multi-Agent Marketing Teams (2026) &mdash; <a href="https://alexgenovese.com/multi-agent-ai-systems-for-marketing-teams-a-practical-guide-to-crewai-in-2026" style="color:var(--blue);">alexgenovese.com</a></li>
+    <li>Agentic Agency: Google Ads &mdash; <a href="https://www.linkedin.com/pulse/agentic-agency-how-ai-crews-revolutionizing-google-ads-weilbacher-kgxbe" style="color:var(--blue);">LinkedIn</a></li>
+  </ul>
+</section>
+
+</div><!-- /content -->
+
+<!-- Footer -->
+<div class="footer">
+  <div style="max-width:900px;">
+    <p>
+      Generated with <a href="https://claude.com/claude-code">Claude Code</a> (Opus 4.6) &mdash;
+      Grok Web Search + Gemini Deep Research &mdash; 2026-03-14
+    </p>
+    <p style="margin-top:4px;">
+      Research sources: 7+ technical papers, 15+ case studies, 20+ API documentation references.
+      This document is for internal reference. Target projects: SYSDEVREQ-1173, SYSDEVREQ-1109, Architecture BP v3.
+    </p>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ===== Active Nav Tracking ===== -->
+<script>
+(function() {
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('section[id], div[id]');
+
+  function updateActiveNav() {
+    let current = '';
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 120) current = section.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  // Close mobile nav on link click
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 960) {
+        document.querySelector('.sidenav').classList.remove('open');
+      }
+    });
+  });
+
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
+})();
+</script>
+
+</body>
+</html>
