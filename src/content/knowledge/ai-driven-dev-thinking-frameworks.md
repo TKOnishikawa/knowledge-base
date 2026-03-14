@@ -1786,6 +1786,94 @@ Gemini OCR + kintone連携で自動化し、作業時間を90%削減する。
     </div>
   </details>
 
+  <!-- GTD × Issue-driven -->
+  <details class="accordion">
+    <summary>GTD × Issue-driven — インボックス運用との両立</summary>
+    <div class="accordion-body">
+
+      <div class="callout">
+        <strong>よくある疑問:</strong> 「ざっくりタスクをInboxに放り込むGTD的運用は、Issue-drivenと相反するのでは？」<br>
+        <strong>答え:</strong> 全く相反しない。むしろ相性抜群。<strong>GTDは「頭を空にする段階」、Issue-drivenは「手を動かす段階」</strong>で、フェーズが違うだけ。
+      </div>
+
+      <h4>2つのフレームワークの関係</h4>
+      <table class="mini-table">
+        <thead><tr><th>GTD（思考の整理）</th><th>Issue-driven（実行の追跡）</th></tr></thead>
+        <tbody>
+          <tr><td>「あ、これやらな」</td><td>「なぜやるか、完了条件は」</td></tr>
+          <tr><td>Inboxに放り込む</td><td>Issue起票 → ブランチ → PR</td></tr>
+          <tr><td>頭を空にする段階</td><td>手を動かす段階</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Inboxは Issue の「前段階」</strong>。放り込むときはざっくりでいい。問題は<strong>ざっくりのまま着手すること</strong>。</p>
+
+      <h4>GitHub Projects での運用フロー</h4>
+      <div class="flow-diagram">
+        <span class="flow-step">Inbox（ざっくり）</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">仕分け時にWhy追記</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Next Action</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">ブランチ作成</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">In Progress</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">PR → Done</span>
+      </div>
+
+      <h4>看板カラムの役割</h4>
+      <table class="mini-table">
+        <thead><tr><th>カラム</th><th>役割</th><th>粒度</th><th>例</th></tr></thead>
+        <tbody>
+          <tr><td><strong>No Status / Inbox</strong></td><td>思いつきを捕獲</td><td>ざっくり1行でOK</td><td>「OCRやりたい」</td></tr>
+          <tr><td><strong>Next Action</strong></td><td>次やると決めたもの</td><td>Why + 完了条件を追記</td><td>SYSDEVREQ-1173</td></tr>
+          <tr><td><strong>In Progress</strong></td><td>今やってるもの</td><td>ブランチ切ってる</td><td>feat/SYSDEVREQ-1173_ocr</td></tr>
+          <tr><td><strong>Waiting</strong></td><td>誰かの返答待ち</td><td>誰を待ってるかメモ</td><td>「田端さんのAPI仕様確認待ち」</td></tr>
+          <tr><td><strong>Done</strong></td><td>完了</td><td>PRマージ済み</td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>ポイント:</strong> Inbox → Next Action に移すタイミングで「Why + 完了条件」を2-3行追記する。<strong>Inboxにある間はざっくりのままでいい</strong>。
+      </div>
+
+      <h4>Issue起票の2パターン</h4>
+      <p>全部のIssueに長文を書く必要はない。</p>
+      <table class="mini-table">
+        <thead><tr><th>パターン</th><th>書く量</th><th>例</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>ざっくりInbox投入</strong><br>（まだ着手時期不明 / 調査系 / すぐ終わる）</td>
+            <td>タイトルだけでOK</td>
+            <td>「松本さんにアンケートのローデータ所在確認」<br>「3/17 MTGアジェンダ最終確認」</td>
+          </tr>
+          <tr>
+            <td><strong>着手時にWhy追記</strong><br>（コード変更あり / 複数日かかる / 引き継ぎ可能性）</td>
+            <td>Why + 完了条件を2-3行</td>
+            <td>Why: 手動入力100分/日を自動化<br>完了条件: OCR精度90%以上、kintone登録成功</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>Issue化の判断基準</h4>
+      <table class="mini-table">
+        <thead><tr><th>タスクの性質</th><th>Why追記する？</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td>コード変更を伴う</td><td><strong>する</strong></td><td>ブランチ・PR・コミットと紐づけるため</td></tr>
+          <tr><td>調査・検討だけ</td><td>しなくてOK</td><td>カードにメモで十分</td></tr>
+          <tr><td>5分で終わる</td><td>しなくてOK</td><td>オーバーヘッドの方が大きい</td></tr>
+          <tr><td>複数日かかる</td><td><strong>する</strong></td><td>中断・再開時に文脈を失わないため</td></tr>
+          <tr><td>他の人に引き継ぐ可能性</td><td><strong>する</strong></td><td>背景がないと引き継げない</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>まとめ:</strong> 今のGTD看板運用は正解。足すのは<strong>「Next Actionに移すときにWhy + 完了条件を2-3行追記」の1ステップだけ</strong>。それだけで半年後の追跡可能性が劇的に変わる。
+      </div>
+    </div>
+  </details>
+
   <!-- 環境再現性 -->
   <details class="accordion">
     <summary>環境再現性 — 「自分のPCでしか動かない」を防ぐ</summary>
